@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LiveMap from '../map/LiveMap';
 import { 
   Activity, 
   ShieldAlert, 
@@ -262,163 +263,17 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
             </div>
           </div>
 
-          {/* Vector Map Canvas */}
-          <div className="ops-map-canvas-container">
-            <svg className="ops-map-svg" viewBox="0 0 720 340" preserveAspectRatio="none">
-              <defs>
-                <pattern id="opsGrid" width="24" height="24" patternUnits="userSpaceOnUse">
-                  <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeWidth="1"/>
-                </pattern>
-
-                <linearGradient id="cloudburstPulseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.85"/>
-                  <stop offset="45%" stopColor="#f97316" stopOpacity="0.7"/>
-                  <stop offset="80%" stopColor="#eab308" stopOpacity="0.45"/>
-                  <stop offset="100%" stopColor="transparent"/>
-                </linearGradient>
-
-                <radialGradient id="nodeGlowRed" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.9"/>
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0"/>
-                </radialGradient>
-              </defs>
-
-              {/* Background dark matrix grid */}
-              <rect width="720" height="340" fill="#080c14" />
-              <rect width="720" height="340" fill="url(#opsGrid)" />
-
-              {/* Coastline & DEM Contours */}
-              <path 
-                d="M 280 0 Q 310 90, 370 160 Q 420 220, 390 290 Q 370 320, 440 340 L 720 340 L 720 0 Z" 
-                fill="#0d1422" 
-                stroke="#1e2c44" 
-                strokeWidth="2"
-              />
-
-              {/* Vasai Creek & River Channels */}
-              <path 
-                d="M 370 160 Q 440 180, 520 170 Q 600 160, 680 190" 
-                stroke="#0284c7" 
-                strokeWidth="6" 
-                fill="none" 
-                strokeDasharray="4 2"
-                opacity="0.7"
-              />
-
-              {/* Hazard Zones Polygons */}
-              {/* Zone A: Vasai Zone */}
-              <polygon 
-                points="330,130 460,140 450,230 330,220" 
-                fill={selectedRegionId === 'vasai' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(239, 68, 68, 0.12)'}
-                stroke={selectedRegionId === 'vasai' ? '#ef4444' : 'rgba(239, 68, 68, 0.4)'}
-                strokeWidth={selectedRegionId === 'vasai' ? '2.5' : '1.5'}
-                strokeDasharray="5 3"
-                className="zone-polygon"
-                onClick={() => setSelectedRegionId('vasai')}
-              />
-
-              {/* Zone B: Nalasopara Zone */}
-              <polygon 
-                points="360,70 480,80 470,140 350,130" 
-                fill={selectedRegionId === 'nalasopara' ? 'rgba(249, 115, 22, 0.3)' : 'rgba(249, 115, 22, 0.12)'}
-                stroke={selectedRegionId === 'nalasopara' ? '#f97316' : 'rgba(249, 115, 22, 0.4)'}
-                strokeWidth={selectedRegionId === 'nalasopara' ? '2.5' : '1.5'}
-                strokeDasharray="5 3"
-                className="zone-polygon"
-                onClick={() => setSelectedRegionId('nalasopara')}
-              />
-
-              {/* Zone C: Virar Zone */}
-              <polygon 
-                points="390,15 510,25 490,80 370,70" 
-                fill={selectedRegionId === 'virar' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.1)'}
-                stroke={selectedRegionId === 'virar' ? '#f59e0b' : 'rgba(245, 158, 11, 0.4)'}
-                strokeWidth={selectedRegionId === 'virar' ? '2.5' : '1.5'}
-                strokeDasharray="5 3"
-                className="zone-polygon"
-                onClick={() => setSelectedRegionId('virar')}
-              />
-
-              {/* Active Convective Cloudburst Heat Blob */}
-              <ellipse 
-                cx={selectedRegion.coords.x} 
-                cy={selectedRegion.coords.y} 
-                rx="110" 
-                ry="70" 
-                fill="url(#cloudburstPulseGrad)"
-                className="pulse-cloudburst"
-              />
-
-              {/* Radar sweep beam */}
-              <line 
-                x1="390" 
-                y1="170" 
-                x2="700" 
-                y2="170" 
-                stroke="rgba(0, 210, 255, 0.3)" 
-                strokeWidth="1.5" 
-                className="ops-radar-sweep"
-              />
-
-              {/* Node Borders & Critical Monitoring Stations */}
-              {/* Vasai Node */}
-              <g 
-                transform="translate(390, 195)" 
-                className="interactive-map-node"
-                onClick={() => setSelectedRegionId('vasai')}
-              >
-                <circle cx="0" cy="0" r="16" fill="url(#nodeGlowRed)" className="pulse-slow" />
-                <circle cx="0" cy="0" r="6" fill="#ef4444" stroke="#ffffff" strokeWidth="2" />
-                <rect x="12" y="-12" width="130" height="24" rx="4" fill="rgba(10, 15, 26, 0.9)" stroke="#ef4444" strokeWidth="1" />
-                <text x="18" y="4" fill="#ffffff" fontSize="11" fontWeight="700" fontFamily="var(--font-mono)">
-                  VASAI [RISK: 87%]
-                </text>
-              </g>
-
-              {/* Nalasopara Node */}
-              <g 
-                transform="translate(430, 135)" 
-                className="interactive-map-node"
-                onClick={() => setSelectedRegionId('nalasopara')}
-              >
-                <circle cx="0" cy="0" r="5" fill="#f97316" stroke="#ffffff" strokeWidth="1.5" />
-                <rect x="12" y="-12" width="145" height="24" rx="4" fill="rgba(10, 15, 26, 0.9)" stroke="#f97316" strokeWidth="1" />
-                <text x="18" y="4" fill="#cbd5e1" fontSize="11" fontWeight="600" fontFamily="var(--font-mono)">
-                  NALASOPARA [93%]
-                </text>
-              </g>
-
-              {/* Virar Node */}
-              <g 
-                transform="translate(460, 65)" 
-                className="interactive-map-node"
-                onClick={() => setSelectedRegionId('virar')}
-              >
-                <circle cx="0" cy="0" r="5" fill="#f59e0b" stroke="#ffffff" strokeWidth="1.5" />
-                <rect x="12" y="-12" width="125" height="24" rx="4" fill="rgba(10, 15, 26, 0.9)" stroke="#f59e0b" strokeWidth="1" />
-                <text x="18" y="4" fill="#cbd5e1" fontSize="11" fontWeight="600" fontFamily="var(--font-mono)">
-                  VIRAR [76%]
-                </text>
-              </g>
-
-              {/* Isochrone / ETA Rings */}
-              <circle cx="390" cy="195" r="50" fill="none" stroke="rgba(239,68,68,0.35)" strokeWidth="1" strokeDasharray="3 3" />
-              <text x="395" y="152" fill="rgba(239,68,68,0.7)" fontSize="9" fontFamily="var(--font-mono)">ETA: 45 min</text>
-
-              <circle cx="390" cy="195" r="95" fill="none" stroke="rgba(249,115,22,0.25)" strokeWidth="1" strokeDasharray="3 3" />
-              <text x="395" y="106" fill="rgba(249,115,22,0.6)" fontSize="9" fontFamily="var(--font-mono)">ETA: 1h 30 min</text>
-            </svg>
-
-            {/* Tactical Canvas Overlay Tag */}
-            <div className="tactical-hud-tag-bottom">
-              <span>RADAR QPE: 88.5 mm/h</span>
-              <span className="pipe-sep">•</span>
-              <span>INSAT-3D TIR DROP: -19.4°C/15m</span>
-              <span className="pipe-sep">•</span>
-              <span>CARTO-DEM ELEVATION: 14m ASL (Low Depression)</span>
-            </div>
+          {/* Interactive Leaflet Map — replaces the SVG vector canvas */}
+          <div className="ops-map-canvas-container" style={{ height: '100%', minHeight: '360px' }}>
+            <LiveMap
+              activeLocation={selectedRegionId}
+              portalMode="officials"
+              onSelectZone={(zone) => setSelectedRegionId(zone.id)}
+            />
           </div>
+
         </div>
+
 
         {/* Right: ACTIVE HAZARDS Panel */}
         <div className="ops-active-hazards-panel">

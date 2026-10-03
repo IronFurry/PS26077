@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   CloudRain, 
   Search, 
@@ -9,7 +9,8 @@ import {
   Radio, 
   ExternalLink,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -21,14 +22,80 @@ export default function Navbar({
   onOpenAlerts,
   notificationsCount = 3 
 }) {
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedIdx, setHighlightedIdx] = useState(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-  const filteredLocations = locations.filter(loc => 
+  const searchWrapperRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Filter locations by query
+  const filteredLocations = locations.filter(loc =>
     loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     loc.district.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Reset highlight when filter changes
+  useEffect(() => {
+    setHighlightedIdx(0);
+  }, [searchQuery]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+      if (showProfileMenu && !e.target.closest('.user-profile-menu-container')) {
+        setShowProfileMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
+
+  const selectLocation = (loc) => {
+    setActiveLocation(loc);
+    setSearchQuery('');
+    setShowDropdown(false);
+    inputRef.current?.blur();
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showDropdown) return;
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIdx(i => Math.min(i + 1, filteredLocations.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIdx(i => Math.max(i - 1, 0));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (filteredLocations[highlightedIdx]) {
+          selectLocation(filteredLocations[highlightedIdx]);
+        }
+        break;
+      case 'Escape':
+        setShowDropdown(false);
+        setSearchQuery('');
+        inputRef.current?.blur();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const riskColor = {
+    'Severe': '#ef4444',
+    'High': '#f97316',
+    'Heavy': '#f59e0b',
+    'Moderate': '#eab308',
+    'Low': '#10b981',
+  };
 
   return (
     <header className="navbar-container">
@@ -48,40 +115,91 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Location Search Bar */}
-        <div className="search-wrapper">
-          <Search size={16} className="search-icon" />
+        {/* ---- Functional Location Search Bar ---- */}
+        <div className="search-wrapper" ref={searchWrapperRef}>
+          <Search size={15} className="search-icon" />
+
           <input
+            ref={inputRef}
             type="text"
             className="search-input"
-            placeholder="Search location (e.g. Vasai, Virar, Mumbai)..."
+            placeholder={`📍 ${activeLocation?.name ?? 'Search location…'}`}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setShowSearchDropdown(true)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowDropdown(true);
+            }}
+            onFocus={() => setShowDropdown(true)}
+            onKeyDown={handleKeyDown}
+            autoComplete="off"
+            spellCheck={false}
+            aria-label="Search monitoring location"
+            aria-expanded={showDropdown}
+            aria-haspopup="listbox"
           />
-          {showSearchDropdown && (
-            <div className="search-dropdown">
-              <div className="dropdown-header">Supported Monitoring Zones (2-6h Nowcast)</div>
-              {filteredLocations.map(loc => (
-                <div 
-                  key={loc.id} 
-                  className={`search-dropdown-item ${activeLocation.id === loc.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveLocation(loc);
-                    setShowSearchDropdown(false);
-                    setSearchQuery('');
-                  }}
-                >
-                  <div className="loc-info">
-                    <MapPin size={14} className="pin-icon" />
-                    <span className="loc-name">{loc.name}</span>
-                    <span className="loc-district">({loc.district})</span>
-                  </div>
-                  <span className={`risk-pill risk-${loc.risk.toLowerCase()}`}>
-                    {loc.risk} Risk
-                  </span>
+
+          {/* Clear button — shows when there's a query */}
+          {searchQuery && (
+            <button
+              className="search-clear-btn"
+              onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
+              aria-label="Clear search"
+            >
+              <X size={13} />
+            </button>
+          )}
+
+          {/* Dropdown results */}
+          {showDropdown && (
+            <div className="search-dropdown" role="listbox">
+              <div className="dropdown-header">
+                Nowcast Monitoring Zones — 2 to 6h Lead Time
+              </div>
+
+              {filteredLocations.length === 0 ? (
+                <div className="search-no-results">
+                  <Search size={16} style={{ opacity: 0.4 }} />
+                  <span>No locations found for "<strong>{searchQuery}</strong>"</span>
                 </div>
-              ))}
+              ) : (
+                filteredLocations.map((loc, idx) => (
+                  <div
+                    key={loc.id}
+                    role="option"
+                    aria-selected={activeLocation?.id === loc.id}
+                    className={`search-dropdown-item 
+                      ${activeLocation?.id === loc.id ? 'active' : ''} 
+                      ${highlightedIdx === idx ? 'highlighted' : ''}`}
+                    onMouseEnter={() => setHighlightedIdx(idx)}
+                    onClick={() => selectLocation(loc)}
+                  >
+                    <div className="loc-info">
+                      <MapPin size={13} className="pin-icon" />
+                      <span className="loc-name">{loc.name}</span>
+                      <span className="loc-district">{loc.district}</span>
+                    </div>
+                    <div className="loc-right">
+                      <span
+                        className="risk-pill"
+                        style={{
+                          background: `${riskColor[loc.risk] ?? '#6b7280'}22`,
+                          color: riskColor[loc.risk] ?? '#6b7280',
+                          border: `1px solid ${riskColor[loc.risk] ?? '#6b7280'}55`,
+                        }}
+                      >
+                        {loc.risk}
+                      </span>
+                      {activeLocation?.id === loc.id && (
+                        <CheckCircle2 size={13} style={{ color: '#00d2ff', flexShrink: 0 }} />
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+
+              <div className="dropdown-footer">
+                {filteredLocations.length} zone{filteredLocations.length !== 1 ? 's' : ''} • ↑↓ navigate • Enter to select • Esc to close
+              </div>
             </div>
           )}
         </div>
@@ -89,7 +207,6 @@ export default function Navbar({
 
       {/* Portal Switcher & Action Tools */}
       <div className="navbar-right">
-        {/* Dual Mode Switcher: Citizen vs Officials */}
         <div className="portal-switcher-pill">
           <button 
             className={`portal-tab ${activePortal === 'citizen' ? 'active' : ''}`}
@@ -141,7 +258,7 @@ export default function Navbar({
             <div className="profile-dropdown-card">
               <div className="profile-header">
                 <strong>Aryan Kate</strong>
-                <span>Vasai-Virar Region (Citizen)</span>
+                <span>📍 {activeLocation?.name} ({activeLocation?.district})</span>
               </div>
               <div className="profile-divider"></div>
               <button 
@@ -156,7 +273,7 @@ export default function Navbar({
               </button>
               <button className="profile-item" onClick={() => setShowProfileMenu(false)}>
                 <MapPin size={15} />
-                Location: Vasai Gaon (Default)
+                Zone: {activeLocation?.name}
               </button>
               <div className="profile-divider"></div>
               <div className="profile-footer-tag">
