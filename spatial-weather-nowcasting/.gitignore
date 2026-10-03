@@ -1,0 +1,17 @@
+# Data and cache directories
+data/
+.zarr_cache/
+runs/
+
+# Model checkpoints and binaries
+models/checkpoints/
+*.pth
+*.pt
+*.zarr
+
+# Python cache and environment
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/

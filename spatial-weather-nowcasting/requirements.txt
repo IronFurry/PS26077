@@ -1,0 +1,9 @@
+torch
+torchvision
+onnx
+onnxruntime
+xarray
+zarr
+netcdf4
+numpy
+scipy
