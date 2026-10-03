@@ -47,7 +47,7 @@ export default function RightAlertPanel({
       <div className="severe-alert-card">
         <div className="severe-alert-top">
           <div className="severe-alert-tag">
-            <span className="severe-fire-icon">🚨</span>
+            <ShieldAlert size={13} className="text-red-400" />
             <span className="severe-tag-text">{SEVERE_ALERT.title}</span>
           </div>
           <span className="severe-time-ago">{SEVERE_ALERT.timestamp}</span>

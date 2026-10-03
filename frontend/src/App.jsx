@@ -20,6 +20,16 @@ function App() {
   const [showSafetyModal, setShowSafetyModal] = useState(false);
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [showXaiModal, setShowXaiModal] = useState(false);
+  const [xaiRegion, setXaiRegion] = useState(LOCATIONS[0]);
+
+  const handleOpenXai = (region) => {
+    if (region) {
+      setXaiRegion(region);
+    } else {
+      setXaiRegion(activeLocation);
+    }
+    setShowXaiModal(true);
+  };
 
   return (
     <div className="app-container">
@@ -50,14 +60,15 @@ function App() {
           {activePortal === 'citizen' ? (
             <CitizenDashboard 
               activeLocation={activeLocation}
+              setActiveLocation={setActiveLocation}
               onOpenAlertDetails={() => setShowAlertModal(true)}
-              onOpenXai={() => setShowXaiModal(true)}
+              onOpenXai={handleOpenXai}
               onOpenSafetyGuide={() => setShowSafetyModal(true)}
             />
           ) : (
             <OfficialsDashboard 
               onOpenDispatchModal={() => setShowDispatchModal(true)}
-              onOpenXaiModal={() => setShowXaiModal(true)}
+              onOpenXaiModal={handleOpenXai}
             />
           )}
         </main>
@@ -83,6 +94,8 @@ function App() {
       <ExplainableAiModal 
         isOpen={showXaiModal}
         onClose={() => setShowXaiModal(false)}
+        region={xaiRegion || activeLocation}
+        onSelectRegion={(reg) => setXaiRegion(reg)}
       />
     </div>
   );

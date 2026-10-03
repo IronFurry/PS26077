@@ -1,13 +1,287 @@
 // Real-time meteorological & nowcasting data for SIH Problem Statement 26077
 // Ministry of Earth Sciences (MoES) & NCMRWF
+// Single Source of Truth for Regional Telemetry & Nowcast Estimates
 
-export const LOCATIONS = [
-  { id: 'vasai', name: 'Vasai Gaon', lat: 19.3639, lon: 72.8093, risk: 'Moderate', district: 'Palghar / MMR' },
-  { id: 'nalasopara', name: 'Nalasopara West', lat: 19.4167, lon: 72.7989, risk: 'Severe', district: 'Palghar / MMR' },
-  { id: 'virar', name: 'Virar South', lat: 19.4700, lon: 72.8000, risk: 'Heavy', district: 'Palghar / MMR' },
-  { id: 'mumbai', name: 'Mumbai Suburbs', lat: 19.0760, lon: 72.8777, risk: 'Moderate', district: 'Mumbai' },
-  { id: 'thane', name: 'Thane North', lat: 19.2183, lon: 72.9781, risk: 'Moderate', district: 'Thane' },
-];
+export const REGIONS_DATA = {
+  vasai: {
+    id: 'vasai',
+    name: 'Vasai Gaon',
+    zoneName: 'Vasai Zone',
+    wardName: 'Vasai West (Gaon & Sandor)',
+    district: 'Palghar / MMR',
+    lat: 19.3639,
+    lon: 72.8093,
+    risk: 'Severe',
+    riskLevel: 'Severe',
+    riskProb: '88%',
+    riskScore: 88,
+    confidence: '91%',
+    impact: 'HIGH',
+    eta: '45 min',
+    population: '185,000',
+    resources: { pumps: 6, boats: 2, shelters: 2 },
+    mtlHeads: {
+      thunderstorm: { probability: 91, riskLevel: 'Severe', leadTime: '2h 15m' },
+      cloudburst: { probability: 88, riskLevel: 'Severe', leadTime: '3h 10m' },
+      flashflood: { probability: 84, riskLevel: 'High', leadTime: '3h 45m' },
+    },
+    precursors: {
+      iwv: '62.8 mm',
+      iwvRate: '+14.2 mm/hr', // Corrected unit: mm/hr (rate of column water vapor)
+      cape: '3,240 J/kg',
+      cin: '-12 J/kg',
+      convergence: '7.4 × 10⁻⁵ s⁻¹',
+      ctt: '-19.4°C / 15m',
+      qpe: '88.5 mm/hr',
+      runoff: '480 m³/s',
+    },
+    xaiFeatures: [
+      { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 38, category: 'Moisture Fuel', detail: 'Rapid accumulation of +14.2 mm/hr along coastal boundary.' },
+      { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 26, category: 'Observational', detail: 'Cooling at -19.4°C/15m confirms deep convective updraft.' },
+      { feature: 'CartoDEM Ulhas-Vasai Catchment Basin', weight: 16, category: 'Topography', detail: 'Runoff channeled into low-lying natural basin ponding.' },
+      { feature: 'Convective Instability (CAPE / CIN)', weight: 14, category: 'Thermodynamics', detail: '3,240 J/kg CAPE with eroded CIN (-12 J/kg).' },
+      { feature: 'Low-Level Wind Convergence (U/V)', weight: 6, category: 'Kinematics', detail: '7.4 × 10⁻⁵ s⁻¹ coastal wind collision line.' },
+    ],
+    reasons: [
+      { title: 'Rainfall intensity increasing', detail: 'QPE satellite radar estimate climbing past 68 mm/hr with convective core formation.' },
+      { title: 'Strong moisture buildup', detail: 'Rapid accumulation of Integrated Water Vapor (+14.2 mm/hr) over coastline.' },
+      { title: 'Storm development detected', detail: 'Cloud Top Temperature drop rate of -19.4°C/15m confirms violent explosive updrafts.' },
+    ],
+    timeline: [
+      { time: 'NOW', val: 35, level: 'low', text: '12 mm/h' },
+      { time: '+30m', val: 68, level: 'mod', text: '42 mm/h' },
+      { time: '+1h', val: 88, level: 'high', text: '86 mm/h' },
+      { time: '+2h', val: 92, level: 'crit', text: '104 mm/h' },
+      { time: '+3h', val: 54, level: 'mod', text: '38 mm/h' },
+    ],
+    interpretation: 'Conditions are favorable for rapid thunderstorm development and severe localized precipitation.',
+  },
+  nalasopara: {
+    id: 'nalasopara',
+    name: 'Nalasopara West',
+    zoneName: 'Nalasopara Zone',
+    wardName: 'Nalasopara West (Sopara)',
+    district: 'Palghar / MMR',
+    lat: 19.4167,
+    lon: 72.7989,
+    risk: 'Extreme',
+    riskLevel: 'Extreme',
+    riskProb: '94%',
+    riskScore: 94,
+    confidence: '94%',
+    impact: 'CRITICAL',
+    eta: '30 min',
+    population: '240,000',
+    resources: { pumps: 8, boats: 4, shelters: 3 },
+    mtlHeads: {
+      thunderstorm: { probability: 96, riskLevel: 'Extreme', leadTime: '1h 45m' },
+      cloudburst: { probability: 94, riskLevel: 'Extreme', leadTime: '2h 30m' },
+      flashflood: { probability: 92, riskLevel: 'Critical', leadTime: '3h 00m' },
+    },
+    precursors: {
+      iwv: '64.2 mm',
+      iwvRate: '+16.8 mm/hr', // Corrected unit: mm/hr
+      cape: '3,410 J/kg',
+      cin: '-8 J/kg',
+      convergence: '8.2 × 10⁻⁵ s⁻¹',
+      ctt: '-21.8°C / 15m',
+      qpe: '96.0 mm/hr',
+      runoff: '560 m³/s',
+    },
+    xaiFeatures: [
+      { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 34, category: 'Observational', detail: 'Rapid core cooling of -21.8°C/15m punching through tropopause.' },
+      { feature: 'CartoDEM Subway Inundation Ponding', weight: 28, category: 'Topography', detail: 'Natural low basin geometry projects roadway and subway submergence.' },
+      { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 22, category: 'Moisture Fuel', detail: 'High column moisture pool (64.2 mm) with +16.8 mm/hr rate.' },
+      { feature: 'Convective Instability (CAPE / CIN)', weight: 10, category: 'Thermodynamics', detail: 'Explosive buoyancy with 3,410 J/kg CAPE.' },
+      { feature: 'Low-Level Wind Convergence (U/V)', weight: 6, category: 'Kinematics', detail: '8.2 × 10⁻⁵ s⁻¹ low-level vertical updraft trigger.' },
+    ],
+    reasons: [
+      { title: 'Severe Cloudburst Core Centered', detail: 'Reflectivity over 58 dBZ indicating torrential localized cloudburst cell.' },
+      { title: 'Low-Lying Depression Ponding', detail: 'CartoDEM slope analysis projects extreme subway and roadway inundation.' },
+      { title: 'Wind Convergence Trigger', detail: 'Persistent low-level wind convergence accelerating vertical ascent.' },
+    ],
+    timeline: [
+      { time: 'NOW', val: 55, level: 'mod', text: '28 mm/h' },
+      { time: '+30m', val: 94, level: 'crit', text: '95 mm/h' },
+      { time: '+1h', val: 98, level: 'crit', text: '115 mm/h' },
+      { time: '+2h', val: 82, level: 'high', text: '68 mm/h' },
+      { time: '+3h', val: 40, level: 'low', text: '22 mm/h' },
+    ],
+    interpretation: 'Extreme convective cloudburst and subway submergence imminent within 30 minutes.',
+  },
+  virar: {
+    id: 'virar',
+    name: 'Virar South',
+    zoneName: 'Virar Zone',
+    wardName: 'Virar South (Bolinj)',
+    district: 'Palghar / MMR',
+    lat: 19.4700,
+    lon: 72.8000,
+    risk: 'High',
+    riskLevel: 'High',
+    riskProb: '76%',
+    riskScore: 76,
+    confidence: '86%',
+    impact: 'MODERATE',
+    eta: '1h 15 min',
+    population: '160,000',
+    resources: { pumps: 4, boats: 1, shelters: 2 },
+    mtlHeads: {
+      thunderstorm: { probability: 82, riskLevel: 'High', leadTime: '2h 30m' },
+      cloudburst: { probability: 74, riskLevel: 'High', leadTime: '3h 30m' },
+      flashflood: { probability: 70, riskLevel: 'Moderate', leadTime: '4h 00m' },
+    },
+    precursors: {
+      iwv: '58.4 mm',
+      iwvRate: '+11.5 mm/hr', // Corrected unit: mm/hr
+      cape: '2,920 J/kg',
+      cin: '-18 J/kg',
+      convergence: '6.1 × 10⁻⁵ s⁻¹',
+      ctt: '-16.2°C / 15m',
+      qpe: '52.0 mm/hr',
+      runoff: '390 m³/s',
+    },
+    xaiFeatures: [
+      { feature: 'CartoDEM Topographic Orographic Lift', weight: 32, category: 'Topography', detail: 'Moist westerly airflow lifting across Western Ghats foothill contours.' },
+      { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 26, category: 'Moisture Fuel', detail: 'Substantial column water vapor pool (58.4 mm).' },
+      { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 20, category: 'Observational', detail: 'Secondary convective cell initiation at -16.2°C/15m.' },
+      { feature: 'Convective Instability (CAPE / CIN)', weight: 14, category: 'Thermodynamics', detail: 'Elevated CAPE profile supporting squall cell development.' },
+      { feature: 'Low-Level Wind Convergence (U/V)', weight: 8, category: 'Kinematics', detail: 'Secondary squall line boundary convergence.' },
+    ],
+    reasons: [
+      { title: 'Orographic Enhancement along Ridge', detail: 'Moist westerly airflow lifting across CartoDEM elevation contours.' },
+      { title: 'Elevated CAPE Profile', detail: 'Instability supports moderate to heavy squall development.' },
+      { title: 'Secondary Cell Propagation', detail: 'Outflow boundary from southern cell triggering secondary thunderstorm cells.' },
+    ],
+    timeline: [
+      { time: 'NOW', val: 20, level: 'low', text: '6 mm/h' },
+      { time: '+30m', val: 42, level: 'low', text: '18 mm/h' },
+      { time: '+1h', val: 78, level: 'high', text: '54 mm/h' },
+      { time: '+2h', val: 84, level: 'high', text: '72 mm/h' },
+      { time: '+3h', val: 60, level: 'mod', text: '40 mm/h' },
+    ],
+    interpretation: 'Convective cell propagation heading northward with moderate flash flood potential.',
+  },
+  mumbai: {
+    id: 'mumbai',
+    name: 'Mumbai Suburbs',
+    zoneName: 'Mumbai Suburbs',
+    wardName: 'Mumbai Suburban Area',
+    district: 'Mumbai',
+    lat: 19.0760,
+    lon: 72.8777,
+    risk: 'Moderate',
+    riskLevel: 'Moderate',
+    riskProb: '62%',
+    riskScore: 62,
+    confidence: '82%',
+    impact: 'MODERATE',
+    eta: '2h 00 min',
+    population: '320,000',
+    resources: { pumps: 5, boats: 2, shelters: 3 },
+    mtlHeads: {
+      thunderstorm: { probability: 68, riskLevel: 'Moderate', leadTime: '3h 00m' },
+      cloudburst: { probability: 58, riskLevel: 'Moderate', leadTime: '3h 45m' },
+      flashflood: { probability: 64, riskLevel: 'Moderate', leadTime: '4h 15m' },
+    },
+    precursors: {
+      iwv: '54.1 mm',
+      iwvRate: '+8.2 mm/hr',
+      cape: '2,480 J/kg',
+      cin: '-22 J/kg',
+      convergence: '4.8 × 10⁻⁵ s⁻¹',
+      ctt: '-12.5°C / 15m',
+      qpe: '38.0 mm/hr',
+      runoff: '290 m³/s',
+    },
+    xaiFeatures: [
+      { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 30, category: 'Moisture Fuel', detail: 'Residual moisture convergence over coastal urban grid.' },
+      { feature: 'CartoDEM Topographic Basin Elevation', weight: 25, category: 'Topography', detail: 'Tidal backwater surge interaction with coastal drainage channels.' },
+      { feature: 'Convective Instability (CAPE / CIN)', weight: 20, category: 'Thermodynamics', detail: 'Moderate buoyancy with 2,480 J/kg CAPE.' },
+      { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 15, category: 'Observational', detail: 'Moderate cloud top cooling rates.' },
+      { feature: 'Low-Level Wind Convergence (U/V)', weight: 10, category: 'Kinematics', detail: 'Urban surface roughness convergence.' },
+    ],
+    reasons: [
+      { title: 'Creek Backwater Surge Watch', detail: 'High tide coincides with forecasted rainfall runoff.' },
+      { title: 'Moderate Moisture Pooling', detail: 'Integrated Water Vapor accumulation at +8.2 mm/hr.' },
+      { title: 'Urban Basin Runoff', detail: 'Subsurface drainage capacity operating near threshold.' },
+    ],
+    timeline: [
+      { time: 'NOW', val: 15, level: 'low', text: '4 mm/h' },
+      { time: '+30m', val: 30, level: 'low', text: '12 mm/h' },
+      { time: '+1h', val: 55, level: 'mod', text: '32 mm/h' },
+      { time: '+2h', val: 68, level: 'mod', text: '45 mm/h' },
+      { time: '+3h', val: 42, level: 'low', text: '20 mm/h' },
+    ],
+    interpretation: 'Moderate shower activity with localized street waterlogging potential.',
+  },
+  thane: {
+    id: 'thane',
+    name: 'Thane North',
+    zoneName: 'Thane Zone',
+    wardName: 'Thane Creek / Ghodbunder',
+    district: 'Thane',
+    lat: 19.2183,
+    lon: 72.9781,
+    risk: 'Moderate',
+    riskLevel: 'Moderate',
+    riskProb: '58%',
+    riskScore: 58,
+    confidence: '78%',
+    impact: 'MODERATE',
+    eta: '2h 30 min',
+    population: '290,000',
+    resources: { pumps: 4, boats: 1, shelters: 2 },
+    mtlHeads: {
+      thunderstorm: { probability: 62, riskLevel: 'Moderate', leadTime: '3h 30m' },
+      cloudburst: { probability: 52, riskLevel: 'Low', leadTime: '4h 00m' },
+      flashflood: { probability: 56, riskLevel: 'Moderate', leadTime: '4h 30m' },
+    },
+    precursors: {
+      iwv: '50.8 mm',
+      iwvRate: '+6.4 mm/hr',
+      cape: '2,140 J/kg',
+      cin: '-28 J/kg',
+      convergence: '4.1 × 10⁻⁵ s⁻¹',
+      ctt: '-10.2°C / 15m',
+      qpe: '26.0 mm/hr',
+      runoff: '240 m³/s',
+    },
+    xaiFeatures: [
+      { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 28, category: 'Moisture Fuel', detail: 'Inland moisture pool from Thane Creek corridor.' },
+      { feature: 'CartoDEM Topographic Basin Elevation', weight: 26, category: 'Topography', detail: 'Ulhas river drainage basin overflow monitoring.' },
+      { feature: 'Convective Instability (CAPE / CIN)', weight: 22, category: 'Thermodynamics', detail: '2,140 J/kg CAPE with strong capping inversion.' },
+      { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 14, category: 'Observational', detail: 'Slow cooling indicating non-severe convective tops.' },
+      { feature: 'Low-Level Wind Convergence (U/V)', weight: 10, category: 'Kinematics', detail: 'Ghodbunder valley wind channeling.' },
+    ],
+    reasons: [
+      { title: 'Inland Creek Channel Inundation Watch', detail: 'Runoff draining from Parsik hills into creek.' },
+      { title: 'Steady Moisture Supply', detail: 'IWV steady at 50.8 mm with +6.4 mm/hr delta rate.' },
+      { title: 'Residual Cluster Influence', detail: 'Trailing showers from coastal convective core.' },
+    ],
+    timeline: [
+      { time: 'NOW', val: 10, level: 'low', text: '2 mm/h' },
+      { time: '+30m', val: 25, level: 'low', text: '8 mm/h' },
+      { time: '+1h', val: 48, level: 'mod', text: '24 mm/h' },
+      { time: '+2h', val: 62, level: 'mod', text: '38 mm/h' },
+      { time: '+3h', val: 35, level: 'low', text: '16 mm/h' },
+    ],
+    interpretation: 'Intermittent moderate showers with low flash flood probability.',
+  },
+};
+
+// Aliases for backward compatibility
+export const REGIONS = REGIONS_DATA;
+
+// Canonical 5 LOCATIONS derived from single source of truth
+export const LOCATIONS = Object.values(REGIONS_DATA).map((r) => ({
+  id: r.id,
+  name: r.name,
+  lat: r.lat,
+  lon: r.lon,
+  risk: r.risk,
+  district: r.district,
+}));
 
 export const HOURLY_FORECAST = [
   { time: 'Now', temp: 27, condition: 'Light rain', icon: 'CloudDrizzle', precipitationMm: 2.4, rainProbability: 85, alert: false },
@@ -26,9 +300,9 @@ export const SEVERE_ALERT = {
   distance: '3.2 km away',
   type: 'Cloudburst & Flash Flood Precursor',
   severity: 'Severe',
-  explanation: 'Our system detected rapidly developing storm clouds and increasing moisture levels in your area, which can lead to heavy rainfall.',
+  explanation: 'Our system detected rapidly developing storm clouds and increasing column water vapor (IWV) in your area, which can lead to torrential rainfall.',
   xaiDetails: {
-    iwvSurge: '+14.2 g/kg/hr (High Moisture Fuel)',
+    iwvSurge: '+14.2 mm/hr (High Moisture Fuel)', // Corrected unit: mm/hr
     cttDropRate: '-18.5°C in 15 mins (Rapid Updraft Core)',
     capeCin: '3,240 J/kg CAPE (Severe Buoyancy)',
     convergence: '6.8 × 10⁻⁵ s⁻¹ (Low-level wind trigger)',
@@ -46,23 +320,23 @@ export const SEVERE_ALERT = {
       reason: 'Flood risk & Tidal Backwater Surge',
       status: 'Water rising (0.4m)',
       severity: 'high',
-      distance: '1.8 km'
+      distance: '1.8 km',
     },
     {
       name: 'Low-lying section near Nalasopara',
       reason: 'Water accumulation & Subway Inundation',
       status: 'Traffic blocked',
       severity: 'high',
-      distance: '3.4 km'
+      distance: '3.4 km',
     },
     {
       name: 'Gaon Junction',
       reason: 'Heavy rainfall runoff',
       status: 'Slow moving traffic',
       severity: 'medium',
-      distance: '1.2 km'
-    }
-  ]
+      distance: '1.2 km',
+    },
+  ],
 };
 
 // PS 26077 - Ministry of Earth Sciences Precursor Telemetry Data
@@ -70,11 +344,11 @@ export const OFFICIALS_PRECURSORS = {
   moistureFuel: {
     name: 'Integrated Water Vapor (IWV)',
     currentValue: '62.8 mm',
-    deltaRate: '+14.2 g/kg/hr',
+    deltaRate: '+14.2 mm/hr', // Corrected unit: mm/hr
     source: 'INSAT-3D/3DR WV Channels (MOSDAC)',
     status: 'Critical Surge',
     threshold: '> 55.0 mm',
-    description: 'Tracks rapid spatial and temporal accumulations of IWV identifying concentrated moisture pools required for heavy precipitation.'
+    description: 'Tracks rapid spatial and temporal accumulations of IWV (column water vapor in mm) identifying concentrated moisture pools required for heavy precipitation.',
   },
   instabilityEnergy: {
     name: 'Atmospheric Instability (CAPE / CIN)',
@@ -83,7 +357,7 @@ export const OFFICIALS_PRECURSORS = {
     source: 'IMDAA Reanalysis Thermodynamic Profile',
     status: 'Explosive Buoyancy',
     threshold: 'CAPE > 2500 J/kg & CIN > -25 J/kg',
-    description: 'Assesses thermal buoyancy profile. High CAPE with rapidly eroding CIN indicates impending violent vertical convective updrafts.'
+    description: 'Assesses thermal buoyancy profile. High CAPE with rapidly eroding CIN indicates impending violent vertical convective updrafts.',
   },
   kinematicsLift: {
     name: 'Kinematics & Lift (Convergence & Shear)',
@@ -92,7 +366,7 @@ export const OFFICIALS_PRECURSORS = {
     source: 'IMDAA U/V Components & Radar QPE',
     status: 'High Low-Level Lift',
     threshold: 'Convergence > 5.0 × 10⁻⁵ s⁻¹',
-    description: 'Low-level wind vectors colliding at surface forcing air upward; vertical shear indicates quasi-stationary storm cell potential.'
+    description: 'Low-level wind vectors colliding at surface forcing air upward; vertical shear indicates quasi-stationary storm cell potential.',
   },
   observationalSignature: {
     name: 'Cloud Top Temperature (CTT) Drop Rate',
@@ -101,7 +375,7 @@ export const OFFICIALS_PRECURSORS = {
     source: 'INSAT-3D/3DR Thermal Infrared (TIR)',
     status: 'Severe Explosive Updraft',
     threshold: 'Drop > -15°C / 15 min',
-    description: 'Direct satellite infrared confirmation of cloud tops punching through tropopause within minutes.'
+    description: 'Direct satellite infrared confirmation of cloud tops punching through tropopause within minutes.',
   },
   topographicDynamics: {
     name: 'Topographic Dynamics (CartoDEM 30m)',
@@ -110,61 +384,57 @@ export const OFFICIALS_PRECURSORS = {
     source: 'CartoDEM High-Res Slope & Drainage Baseline',
     status: 'Severe Flash Flood Hazard',
     threshold: 'Runoff > 380 m³/s',
-    description: 'Translates extreme precipitation into ground-level runoff flow channels and natural basin ponding.'
-  }
+    description: 'Translates extreme precipitation into ground-level runoff flow channels and natural basin ponding.',
+  },
 };
 
 export const MTL_HEADS_DATA = [
   {
     id: 'thunderstorm',
     name: 'Severe Thunderstorm Head',
-    probability: 94,
+    probability: 91,
     leadTime: '2h 15m lead time',
     riskLevel: 'Severe',
     color: '#f59e0b',
     icon: 'Zap',
     triggerThreshold: 'Exceeded (CAPE 3240, CTT -19.4°C)',
     affectedRadius: '14.5 km',
-    keyPrecursor: 'High CAPE + Explosive CTT Drop'
+    keyPrecursor: 'High CAPE + Explosive CTT Drop',
   },
   {
     id: 'cloudburst',
     name: 'Localized Cloudburst Head',
     probability: 88,
     leadTime: '3h 10m lead time',
-    riskLevel: 'Extreme',
+    riskLevel: 'Severe',
     color: '#ef4444',
     icon: 'CloudLightning',
     triggerThreshold: 'Exceeded (IWV 62.8mm, Moisture Convergence)',
     affectedRadius: '8.2 km',
-    keyPrecursor: 'Extreme IWV Surge (>60mm pool)'
+    keyPrecursor: 'Extreme IWV Surge (>60mm pool)',
   },
   {
     id: 'flashflood',
     name: 'Flash Flood & Inundation Head',
-    probability: 82,
+    probability: 84,
     leadTime: '3h 45m lead time',
     riskLevel: 'High',
     color: '#3b82f6',
     icon: 'Waves',
     triggerThreshold: 'Exceeded (CartoDEM low-depression ponding)',
     affectedRadius: '11.0 km',
-    keyPrecursor: 'DEM Slope Channelling + QPE > 85mm/hr'
-  }
+    keyPrecursor: 'DEM Slope Channelling + QPE > 85mm/hr',
+  },
 ];
 
-export const WARDS_STATUS = [
-  { name: 'Vasai West (Gaon & Sandor)', risk: 'Severe (88%)', population: '185,000', pumps: 6, boats: 2, shelters: 2 },
-  { name: 'Nalasopara West (Sopara)', risk: 'Extreme (94%)', population: '240,000', pumps: 8, boats: 4, shelters: 3 },
-  { name: 'Virar South (Bolinj)', risk: 'High (76%)', population: '160,000', pumps: 4, boats: 1, shelters: 2 },
-  { name: 'Mira-Bhayandar East', risk: 'Moderate (62%)', population: '320,000', pumps: 5, boats: 2, shelters: 3 },
-  { name: 'Thane Creek / Ghodbunder', risk: 'Moderate (58%)', population: '290,000', pumps: 4, boats: 1, shelters: 2 }
-];
+// Wards status derived consistently from REGIONS_DATA
+export const WARDS_STATUS = Object.values(REGIONS_DATA).map((r) => ({
+  name: r.wardName,
+  risk: `${r.risk} (${r.riskProb})`,
+  population: r.population,
+  pumps: r.resources.pumps,
+  boats: r.resources.boats,
+  shelters: r.resources.shelters,
+}));
 
-export const XAI_FEATURE_CONTRIBUTION = [
-  { feature: 'Integrated Water Vapor (IWV) Accumulation', weight: 36, category: 'Moisture Fuel' },
-  { feature: 'Cloud Top Temperature (CTT) Drop Rate', weight: 28, category: 'Observational' },
-  { feature: 'CartoDEM Topographic Basin Elevation', weight: 18, category: 'Topography' },
-  { feature: 'Convective Instability (CAPE / CIN)', weight: 12, category: 'Thermodynamics' },
-  { feature: 'Low-Level Wind Convergence (U/V)', weight: 6, category: 'Kinematics' },
-];
+export const XAI_FEATURE_CONTRIBUTION = REGIONS_DATA.vasai.xaiFeatures;

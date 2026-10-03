@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import LiveMap from '../map/LiveMap';
+import RiskMap from '../map/RiskMap';
 import { 
   Activity, 
   ShieldAlert, 
@@ -31,119 +31,35 @@ import {
   Maximize2
 } from 'lucide-react';
 import { 
+  REGIONS_DATA,
   OFFICIALS_PRECURSORS, 
   MTL_HEADS_DATA, 
   WARDS_STATUS, 
   XAI_FEATURE_CONTRIBUTION 
 } from '../../data/weatherData';
+import { getNowcast } from '../../services/api';
 
 export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal }) {
   // Navigation tabs matching the user's wireframe
   const [activeNav, setActiveNav] = useState('OVERVIEW'); // 'OVERVIEW' | 'MAP' | 'HAZARDS' | 'SATELLITE' | 'DATA' | 'NODES' | 'XAI'
   
-  // Region Selection (Defaults to 'Vasai Zone' as specified in wireframe)
+  // Region Selection (Defaults to 'vasai' as single source of truth)
   const [selectedRegionId, setSelectedRegionId] = useState('vasai');
   const [activeHazardFilter, setActiveHazardFilter] = useState('cloudburst');
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Region database
-  const REGIONS = {
-    vasai: {
-      name: 'Vasai Zone',
-      riskProb: '87%',
-      confidence: '91%',
-      impact: 'HIGH',
-      eta: '45 min',
-      coords: { x: 390, y: 195 },
-      reasons: [
-        { title: 'Rainfall intensity increasing', detail: 'QPE satellite radar estimate climbing past 68 mm/hr with convective core formation.' },
-        { title: 'Strong moisture buildup', detail: 'Rapid accumulation of Integrated Water Vapor (+14.2 g/kg/hr) over the coastline.' },
-        { title: 'Storm development detected', detail: 'Cloud Top Temperature drop rate of -19.4°C/15m confirms violent explosive updrafts.' }
-      ],
-      timeline: [
-        { time: 'NOW', val: 35, level: 'low', text: '12 mm/h' },
-        { time: '+30m', val: 68, level: 'mod', text: '42 mm/h' },
-        { time: '+1h', val: 92, level: 'high', text: '86 mm/h' },
-        { time: '+2h', val: 96, level: 'crit', text: '104 mm/h' },
-        { time: '+3h', val: 54, level: 'mod', text: '38 mm/h' },
-      ],
-      precursors: {
-        iwv: '62.8 mm ↑',
-        cape: '3,240 J/kg ↑',
-        cin: '-12 J/kg ↓',
-        convergence: '7.4 × 10⁻⁵ s⁻¹ ↑',
-        ctt: '-19.4°C / 15m ↓',
-        qpe: '88.5 mm/hr ↑'
-      },
-      interpretation: 'Conditions are becoming favorable for rapid thunderstorm development and intense rainfall.'
-    },
-    nalasopara: {
-      name: 'Nalasopara Corridor',
-      riskProb: '93%',
-      confidence: '94%',
-      impact: 'CRITICAL',
-      eta: '30 min',
-      coords: { x: 430, y: 140 },
-      reasons: [
-        { title: 'Severe Cloudburst Core Centered', detail: 'Reflectivity over 58 dBZ indicating torrential localized cloudburst cell.' },
-        { title: 'Low-Lying Depression Ponding', detail: 'CartoDEM slope analysis projects extreme subway and roadway inundation.' },
-        { title: 'Wind Convergence Trigger', detail: 'Persistent low-level wind convergence accelerating vertical ascent.' }
-      ],
-      timeline: [
-        { time: 'NOW', val: 55, level: 'mod', text: '28 mm/h' },
-        { time: '+30m', val: 94, level: 'crit', text: '95 mm/h' },
-        { time: '+1h', val: 98, level: 'crit', text: '115 mm/h' },
-        { time: '+2h', val: 82, level: 'high', text: '68 mm/h' },
-        { time: '+3h', val: 40, level: 'low', text: '22 mm/h' },
-      ],
-      precursors: {
-        iwv: '64.2 mm ↑',
-        cape: '3,410 J/kg ↑',
-        cin: '-8 J/kg ↓',
-        convergence: '8.2 × 10⁻⁵ s⁻¹ ↑',
-        ctt: '-21.8°C / 15m ↓',
-        qpe: '96.0 mm/hr ↑'
-      },
-      interpretation: 'Extreme convective cloudburst and subway submergence imminent within 30 minutes.'
-    },
-    virar: {
-      name: 'Virar Foothills',
-      riskProb: '76%',
-      confidence: '86%',
-      impact: 'MODERATE',
-      eta: '1h 15 min',
-      coords: { x: 470, y: 90 },
-      reasons: [
-        { title: 'Orographic Enhancement along Ridge', detail: 'Moist westerly airflow lifting across CartoDEM elevation contours.' },
-        { title: 'Elevated CAPE Profile', detail: 'Instability supports moderate to heavy squall development.' },
-        { title: 'Secondary Cell Propagation', detail: 'Outflow boundary from southern cell triggering secondary thunderstorm cells.' }
-      ],
-      timeline: [
-        { time: 'NOW', val: 20, level: 'low', text: '6 mm/h' },
-        { time: '+30m', val: 42, level: 'low', text: '18 mm/h' },
-        { time: '+1h', val: 78, level: 'high', text: '54 mm/h' },
-        { time: '+2h', val: 84, level: 'high', text: '72 mm/h' },
-        { time: '+3h', val: 60, level: 'mod', text: '40 mm/h' },
-      ],
-      precursors: {
-        iwv: '58.4 mm ↑',
-        cape: '2,920 J/kg ↑',
-        cin: '-18 J/kg ↓',
-        convergence: '6.1 × 10⁻⁵ s⁻¹ ↑',
-        ctt: '-16.2°C / 15m ↓',
-        qpe: '52.0 mm/hr ↑'
-      },
-      interpretation: 'Convective cell propagation heading northward with moderate flash flood potential.'
-    }
-  };
+  // Single Source of Truth from REGIONS_DATA
+  const selectedRegion = REGIONS_DATA[selectedRegionId] || REGIONS_DATA.vasai;
 
-  const selectedRegion = REGIONS[selectedRegionId] || REGIONS.vasai;
-
-  const handleSimulate = () => {
+  const handleSimulate = async () => {
     setIsSimulating(true);
-    setTimeout(() => {
+    try {
+      await getNowcast(selectedRegionId);
+    } catch (err) {
+      console.error('Failed to run inference:', err);
+    } finally {
       setIsSimulating(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -207,7 +123,7 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               className={`ops-subnav-btn ${activeNav === item.id ? 'active' : ''}`}
               onClick={() => {
                 setActiveNav(item.id);
-                if (item.id === 'XAI') onOpenXaiModal();
+                if (item.id === 'XAI') onOpenXaiModal(selectedRegionId);
               }}
             >
               <span className="subnav-indicator"></span>
@@ -263,12 +179,20 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
             </div>
           </div>
 
-          {/* Interactive Leaflet Map — replaces the SVG vector canvas */}
-          <div className="ops-map-canvas-container" style={{ height: '100%', minHeight: '360px' }}>
-            <LiveMap
+          {/* Interactive MapLibre RiskMap component */}
+          <div className="ops-map-canvas-container" style={{ height: '100%', minHeight: '380px', position: 'relative' }}>
+            <RiskMap
+              mode="officials"
               activeLocation={selectedRegionId}
-              portalMode="officials"
-              onSelectZone={(zone) => setSelectedRegionId(zone.id)}
+              onSelectLocation={(loc) => {
+                const id = (typeof loc === 'object' ? loc?.id : loc)?.toLowerCase();
+                if (['vasai', 'nalasopara', 'virar', 'mumbai', 'thane'].includes(id)) {
+                  setSelectedRegionId(id);
+                }
+              }}
+              onOpenXai={(loc) => {
+                onOpenXaiModal(loc || selectedRegionId);
+              }}
             />
           </div>
 
@@ -289,7 +213,7 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               onClick={() => setSelectedRegionId('vasai')}
             >
               <div className="hazard-wire-header">
-                <span className="hazard-symbol red-symbol">🔴</span>
+                <span className="hazard-symbol red-symbol"><AlertCircle size={15} className="text-red" /></span>
                 <strong className="hazard-name text-red">CLOUD BURST</strong>
               </div>
               <div className="hazard-location">Maharashtra (Vasai-Virar)</div>
@@ -297,15 +221,15 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               <div className="hazard-telemetry-grid">
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Risk:</span>
-                  <strong className="h-stat-val text-red">87%</strong>
+                  <strong className="h-stat-val text-red">{REGIONS_DATA.vasai.riskProb}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">ETA:</span>
-                  <strong className="h-stat-val">45 min</strong>
+                  <strong className="h-stat-val">{REGIONS_DATA.vasai.eta}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Confidence:</span>
-                  <strong className="h-stat-val text-cyan">91%</strong>
+                  <strong className="h-stat-val text-cyan">{REGIONS_DATA.vasai.confidence}</strong>
                 </div>
               </div>
             </div>
@@ -316,7 +240,7 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               onClick={() => setSelectedRegionId('virar')}
             >
               <div className="hazard-wire-header">
-                <span className="hazard-symbol orange-symbol">🟠</span>
+                <span className="hazard-symbol orange-symbol"><CloudRain size={15} className="text-orange" /></span>
                 <strong className="hazard-name text-orange">HEAVY RAIN</strong>
               </div>
               <div className="hazard-location">North Palghar Corridor</div>
@@ -324,15 +248,15 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               <div className="hazard-telemetry-grid">
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Risk:</span>
-                  <strong className="h-stat-val text-orange">64%</strong>
+                  <strong className="h-stat-val text-orange">{REGIONS_DATA.virar.riskProb}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">ETA:</span>
-                  <strong className="h-stat-val">1h 15m</strong>
+                  <strong className="h-stat-val">{REGIONS_DATA.virar.eta}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Confidence:</span>
-                  <strong className="h-stat-val text-cyan">86%</strong>
+                  <strong className="h-stat-val text-cyan">{REGIONS_DATA.virar.confidence}</strong>
                 </div>
               </div>
             </div>
@@ -343,7 +267,7 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               onClick={() => setSelectedRegionId('nalasopara')}
             >
               <div className="hazard-wire-header">
-                <span className="hazard-symbol blue-symbol">🌊</span>
+                <span className="hazard-symbol blue-symbol"><Waves size={15} className="text-blue" /></span>
                 <strong className="hazard-name text-blue">FLASH FLOOD</strong>
               </div>
               <div className="hazard-location">Nalasopara Subway Basin</div>
@@ -351,15 +275,15 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
               <div className="hazard-telemetry-grid">
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Risk:</span>
-                  <strong className="h-stat-val text-blue">93%</strong>
+                  <strong className="h-stat-val text-blue">{REGIONS_DATA.nalasopara.riskProb}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">ETA:</span>
-                  <strong className="h-stat-val">30 min</strong>
+                  <strong className="h-stat-val">{REGIONS_DATA.nalasopara.eta}</strong>
                 </div>
                 <div className="hazard-stat">
                   <span className="h-stat-lbl">Confidence:</span>
-                  <strong className="h-stat-val text-cyan">94%</strong>
+                  <strong className="h-stat-val text-cyan">{REGIONS_DATA.nalasopara.confidence}</strong>
                 </div>
               </div>
             </div>
@@ -368,181 +292,433 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
       </div>
 
       {/* =========================================================================
-          SELECTED REGION KPI BANNER:
-          SELECTED REGION: Vasai Zone
-          [Risk Probability: 87%] [Confidence: 91%] [Expected Impact: HIGH] [ETA: 45 min]
+          CONDITIONAL SUB-VIEWS (MAP | HAZARDS | SATELLITE | DATA | NODES | OVERVIEW)
           ========================================================================= */}
-      <div className="ops-selected-region-strip">
-        <div className="selected-region-label-box">
-          <MapPin size={16} className="text-cyan" />
-          <span className="sel-tag">SELECTED REGION:</span>
-          <strong className="sel-val">{selectedRegion.name}</strong>
+      {activeNav === 'MAP' && (
+        <div className="ops-view-container" style={{ padding: '16px', background: '#090d16', borderRadius: '10px', marginTop: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Maximize2 size={16} className="text-cyan" />
+                <span>Expanded Hyper-Local GIS Nowcast Map</span>
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                Full-screen radar nowcast cell extrapolation, 3D CartoDEM terrain & municipal risk zones
+              </p>
+            </div>
+            <div className="map-zone-toggles">
+              {Object.values(REGIONS_DATA).map((r) => (
+                <button
+                  key={r.id}
+                  className={`zone-pill ${selectedRegionId === r.id ? 'active' : ''}`}
+                  onClick={() => setSelectedRegionId(r.id)}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ height: '560px', borderRadius: '8px', overflow: 'hidden' }}>
+            <RiskMap
+              mode="officials"
+              activeLocation={selectedRegionId}
+              onSelectLocation={(loc) => {
+                const id = (typeof loc === 'object' ? loc?.id : loc)?.toLowerCase();
+                if (REGIONS_DATA[id]) setSelectedRegionId(id);
+              }}
+              onOpenXai={(loc) => onOpenXaiModal(loc || selectedRegionId)}
+            />
+          </div>
         </div>
+      )}
 
-        <div className="selected-region-kpi-row">
-          <div className="region-kpi-box">
-            <span className="r-kpi-label">Risk Probability</span>
-            <strong className="r-kpi-value text-red">{selectedRegion.riskProb}</strong>
+      {activeNav === 'HAZARDS' && (
+        <div className="ops-view-container" style={{ padding: '18px', background: '#090d16', borderRadius: '10px', marginTop: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldAlert size={16} className="text-red" />
+                <span>Regional Hazard Triage & First Responder Deployment</span>
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                Palghar & MMR Municipal Ward Emergency Readiness Matrix
+              </p>
+            </div>
+            <button className="ops-action-btn cap-dispatch-btn-wire" onClick={onOpenDispatchModal}>
+              <Send size={13} />
+              <span>Broadcast Evacuation CAP Alert</span>
+            </button>
           </div>
 
-          <div className="region-kpi-box">
-            <span className="r-kpi-label">Confidence</span>
-            <strong className="r-kpi-value text-cyan">{selectedRegion.confidence}</strong>
-          </div>
-
-          <div className="region-kpi-box">
-            <span className="r-kpi-label">Expected Impact</span>
-            <strong className={`r-kpi-value ${selectedRegion.impact === 'CRITICAL' ? 'text-red' : 'text-orange'}`}>
-              {selectedRegion.impact}
-            </strong>
-          </div>
-
-          <div className="region-kpi-box">
-            <span className="r-kpi-label">ETA</span>
-            <strong className="r-kpi-value text-amber">{selectedRegion.eta}</strong>
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          SPLIT SECTION:
-          [WHY THIS ALERT?] vs [FORECAST TIMELINE (NOW → +30m → +1h → +2h → +3h)]
-          ========================================================================= */}
-      <div className="ops-split-explanation-grid">
-        {/* Left: WHY THIS ALERT? */}
-        <div className="ops-why-alert-box">
-          <div className="ops-box-header">
-            <Info size={15} className="text-cyan" />
-            <span className="ops-box-title">WHY THIS ALERT?</span>
-          </div>
-
-          <ul className="why-alert-bullets-list">
-            {selectedRegion.reasons.map((item, idx) => (
-              <li key={idx} className="why-bullet-item">
-                <span className="bullet-dot">•</span>
-                <div className="bullet-content">
-                  <strong className="bullet-title">{item.title}</strong>
-                  <span className="bullet-desc">{item.detail}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+            {Object.values(REGIONS_DATA).map((r) => (
+              <div key={r.id} className="hazard-wire-card" style={{ padding: '14px', border: selectedRegionId === r.id ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong style={{ color: '#fff', fontSize: '14px' }}>{r.name}</strong>
+                  <span className={`head-badge-item ${r.risk === 'Extreme' ? 'badge-red' : r.risk === 'Severe' ? 'badge-orange' : 'badge-blue'}`}>
+                    {r.risk} ({r.riskProb})
+                  </span>
                 </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <div style={{ fontSize: '11.5px', color: '#94a3b8', margin: '6px 0 10px' }}>{r.wardName} • ETA: {r.eta}</div>
 
-        {/* Right: FORECAST TIMELINE */}
-        <div className="ops-timeline-box">
-          <div className="ops-box-header">
-            <Clock size={15} className="text-amber" />
-            <span className="ops-box-title">FORECAST TIMELINE</span>
-            <span className="timeline-formula-sub">NOW → +30m → +1h → +2h → +3h</span>
-          </div>
-
-          <div className="timeline-bars-sequence">
-            {selectedRegion.timeline.map((slot, idx) => (
-              <div key={idx} className="timeline-col-block">
-                <div className="timeline-time-label">{slot.time}</div>
-                
-                {/* Visual Block Bar matching ████ ASCII art representation */}
-                <div className="ascii-block-column">
-                  <div className="bar-track-outer">
-                    <div 
-                      className={`bar-fill-block block-${slot.level}`}
-                      style={{ height: `${slot.val}%` }}
-                    ></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '8px', borderRadius: '6px' }}>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Pumps</span>
+                    <strong style={{ color: '#38bdf8', fontSize: '13px' }}>{r.resources?.pumps ?? 4} units</strong>
                   </div>
-                  {/* Digital text readout */}
-                  <span className="block-val-readout">{slot.val}%</span>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Boats</span>
+                    <strong style={{ color: '#f59e0b', fontSize: '13px' }}>{r.resources?.boats ?? 2} units</strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Shelters</span>
+                    <strong style={{ color: '#10b981', fontSize: '13px' }}>{r.resources?.shelters ?? 2} open</strong>
+                  </div>
                 </div>
 
-                <div className="timeline-rain-rate">{slot.text}</div>
+                <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Pop: {r.population}</span>
+                  <button className="xai-inspect-btn" onClick={() => onOpenXaiModal(r.id)} style={{ padding: '4px 8px', fontSize: '11px' }}>
+                    <span>XAI Attributions</span>
+                    <ChevronRight size={12} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {activeNav === 'SATELLITE' && (
+        <div className="ops-view-container" style={{ padding: '18px', background: '#090d16', borderRadius: '10px', marginTop: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Layers size={16} className="text-cyan" />
+                <span>INSAT-3D / 3DR Multi-Spectral Radiance Telemetry</span>
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                MOSDAC geostationary payload channels fused for deep convective precursor tracking
+              </p>
+            </div>
+            <div className="map-zone-toggles">
+              {['vasai', 'nalasopara', 'virar'].map((id) => (
+                <button
+                  key={id}
+                  className={`zone-pill ${selectedRegionId === id ? 'active' : ''}`}
+                  onClick={() => setSelectedRegionId(id)}
+                >
+                  {REGIONS_DATA[id].name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
+            <div className="feature-card">
+              <div className="fc-top">
+                <span className="fc-title">1. Water Vapor Channel (6.8 µm WV)</span>
+                <span className="fc-val text-cyan">{selectedRegion.precursors.iwv}</span>
+              </div>
+              <p className="fc-desc">
+                Measures column moisture fuel pool. Rapid surge of <strong>{selectedRegion.precursors.iwvRate}</strong> provides latent heat for violent convective development.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="fc-top">
+                <span className="fc-title">2. Thermal Infrared (TIR-1 10.8 µm CTT)</span>
+                <span className="fc-val text-red">{selectedRegion.precursors.ctt}</span>
+              </div>
+              <p className="fc-desc">
+                Direct detection of cloud-top cooling penetrating the tropopause. Confirms explosive vertical updraft core formation.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="fc-top">
+                <span className="fc-title">3. High-Resolution Visible Channel (0.65 µm)</span>
+                <span className="fc-val text-amber">Albedo 0.88</span>
+              </div>
+              <p className="fc-desc">
+                Mesoscale convective cloud texture and overshooting tops resolution over Western Ghats maritime boundary.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <div className="fc-top">
+                <span className="fc-title">4. CartoDEM 30m Topographic Slope</span>
+                <span className="fc-val text-blue">Peak Runoff {selectedRegion.precursors.runoff}</span>
+              </div>
+              <p className="fc-desc">
+                Hydrological routing and depression ponding projection along coastal railway subways and creek channels.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeNav === 'DATA' && (
+        <div className="ops-view-container" style={{ padding: '18px', background: '#090d16', borderRadius: '10px', marginTop: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Database size={16} className="text-emerald" />
+                <span>Numerical Precursors Telemetry Matrix</span>
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                Single source of truth metrics verified across MoES-NCMRWF data pipelines
+              </p>
+            </div>
+            <button className="ops-action-btn simulate-btn-wire" onClick={handleSimulate}>
+              <RefreshCw size={13} className={isSimulating ? 'spin' : ''} />
+              <span>Refresh Readings</span>
+            </button>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table className="nwp-comp-table" style={{ width: '100%', fontSize: '12px' }}>
+              <thead>
+                <tr>
+                  <th>Region</th>
+                  <th>Risk %</th>
+                  <th>IWV (mm)</th>
+                  <th>IWV Rate (mm/hr)</th>
+                  <th>CAPE</th>
+                  <th>CIN</th>
+                  <th>Convergence</th>
+                  <th>CTT Drop</th>
+                  <th>Radar QPE</th>
+                  <th>ETA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.values(REGIONS_DATA).map((r) => (
+                  <tr key={r.id} style={{ background: selectedRegionId === r.id ? 'rgba(56, 189, 248, 0.08)' : 'transparent' }}>
+                    <td><strong>{r.name}</strong></td>
+                    <td className={r.riskScore >= 80 ? 'text-red' : 'text-amber'}><strong>{r.riskProb}</strong></td>
+                    <td className="text-cyan">{r.precursors.iwv}</td>
+                    <td className="text-cyan">{r.precursors.iwvRate}</td>
+                    <td className="text-amber">{r.precursors.cape}</td>
+                    <td className="text-emerald">{r.precursors.cin}</td>
+                    <td className="text-purple">{r.precursors.convergence}</td>
+                    <td className="text-red">{r.precursors.ctt}</td>
+                    <td className="text-blue">{r.precursors.qpe}</td>
+                    <td>{r.eta}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeNav === 'NODES' && (
+        <div className="ops-view-container" style={{ padding: '18px', background: '#090d16', borderRadius: '10px', marginTop: '14px', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Radio size={16} className="text-amber" />
+                <span>Ground Telemetry Nodes & Edge Sensor Array</span>
+              </h3>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
+                Automated Weather Stations (AWS) & Doppler Radar Repeater Health
+              </p>
+            </div>
+            <div style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <CheckCircle2 size={15} />
+              <span>5 of 5 Nodes Online</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+            {[
+              { name: 'Vasai Gaon Coastal AWS', id: 'AWS-VASAI-01', ping: '12ms', status: 'Online', uptime: '99.8%', coords: '19.3639° N, 72.8093° E' },
+              { name: 'Nalasopara Sopara Tipping Rain Gauge', id: 'AWS-NALA-02', ping: '14ms', status: 'Online', uptime: '100%', coords: '19.4167° N, 72.7989° E' },
+              { name: 'Virar Foothill Doppler Repeater', id: 'DOP-VIRAR-03', ping: '18ms', status: 'Online', uptime: '99.4%', coords: '19.4700° N, 72.8000° E' },
+              { name: 'Thane Creek Hydrological Gauge', id: 'HYD-THANE-04', ping: '22ms', status: 'Online', uptime: '99.1%', coords: '19.2183° N, 72.9781° E' },
+              { name: 'Mumbai Suburban Met Observational Tower', id: 'MET-MUM-05', ping: '9ms', status: 'Online', uptime: '99.9%', coords: '19.0760° N, 72.8777° E' },
+            ].map((node) => (
+              <div key={node.id} className="feature-card" style={{ padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong style={{ fontSize: '13px', color: '#fff' }}>{node.name}</strong>
+                  <span className="sys-status-label" style={{ color: '#10b981', fontSize: '10px' }}>● {node.status}</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#64748b', margin: '4px 0' }}><code>{node.id}</code> • {node.coords}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' }}>
+                  <span>Latency: <strong className="text-emerald">{node.ping}</strong></span>
+                  <span>Uptime: <strong className="text-cyan">{node.uptime}</strong></span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* =========================================================================
-          BOTTOM SECTION:
-          METEOROLOGICAL EVIDENCE
-          [IWV ↑] [CAPE ↑] [CIN ↓] [Convergence ↑] [CTT ↓] [QPE ↑]
-          MODEL INTERPRETATION: Conditions are becoming favorable for rapid thunderstorm development...
+          SELECTED REGION KPI BANNER (Default Overview Mode)
           ========================================================================= */}
-      <div className="ops-meteorological-evidence-panel">
-        <div className="evidence-panel-header">
-          <Activity size={16} className="text-emerald" />
-          <span className="evidence-title">METEOROLOGICAL EVIDENCE</span>
-          <span className="evidence-sensors-tag">FUSED SATELLITE + IMDAA PREDICTIVE MATRIX</span>
-        </div>
-
-        {/* 6 Core Meteorological Indicators */}
-        <div className="evidence-badges-row">
-          <div className="evidence-badge-chip chip-cyan">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">IWV ↑</span>
-              <span className="chip-sub">MOISTURE FUEL</span>
+      {activeNav === 'OVERVIEW' && (
+        <>
+          <div className="ops-selected-region-strip">
+            <div className="selected-region-label-box">
+              <MapPin size={16} className="text-cyan" />
+              <span className="sel-tag">SELECTED REGION:</span>
+              <strong className="sel-val">{selectedRegion.name}</strong>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.iwv}</strong>
-            <span className="chip-source">INSAT-3D WV (+14.2 g/kg/h)</span>
-          </div>
 
-          <div className="evidence-badge-chip chip-amber">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">CAPE ↑</span>
-              <span className="chip-sub">BUOYANCY ENERGY</span>
+            <div className="selected-region-kpi-row">
+              <div className="region-kpi-box">
+                <span className="r-kpi-label">Risk Probability</span>
+                <strong className="r-kpi-value text-red">{selectedRegion.riskProb}</strong>
+              </div>
+
+              <div className="region-kpi-box">
+                <span className="r-kpi-label">Confidence</span>
+                <strong className="r-kpi-value text-cyan">{selectedRegion.confidence}</strong>
+              </div>
+
+              <div className="region-kpi-box">
+                <span className="r-kpi-label">Expected Impact</span>
+                <strong className={`r-kpi-value ${selectedRegion.impact === 'CRITICAL' ? 'text-red' : 'text-orange'}`}>
+                  {selectedRegion.impact}
+                </strong>
+              </div>
+
+              <div className="region-kpi-box">
+                <span className="r-kpi-label">ETA</span>
+                <strong className="r-kpi-value text-amber">{selectedRegion.eta}</strong>
+              </div>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.cape}</strong>
-            <span className="chip-source">IMDAA Thermodynamic</span>
           </div>
 
-          <div className="evidence-badge-chip chip-emerald">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">CIN ↓</span>
-              <span className="chip-sub">CAP EROSION</span>
+          {/* SPLIT SECTION: [WHY THIS ALERT?] vs [FORECAST TIMELINE] */}
+          <div className="ops-split-explanation-grid">
+            <div className="ops-why-alert-box">
+              <div className="ops-box-header">
+                <Info size={15} className="text-cyan" />
+                <span className="ops-box-title">WHY THIS ALERT?</span>
+              </div>
+
+              <ul className="why-alert-bullets-list">
+                {selectedRegion.reasons.map((item, idx) => (
+                  <li key={idx} className="why-bullet-item">
+                    <span className="bullet-dot">•</span>
+                    <div className="bullet-content">
+                      <strong className="bullet-title">{item.title}</strong>
+                      <span className="bullet-desc">{item.detail}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.cin}</strong>
-            <span className="chip-source">Inversion Breached</span>
-          </div>
 
-          <div className="evidence-badge-chip chip-purple">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">Convergence ↑</span>
-              <span className="chip-sub">VERTICAL LIFT</span>
+            <div className="ops-timeline-box">
+              <div className="ops-box-header">
+                <Clock size={15} className="text-amber" />
+                <span className="ops-box-title">FORECAST TIMELINE</span>
+                <span className="timeline-formula-sub">NOW → +30m → +1h → +2h → +3h</span>
+              </div>
+
+              <div className="timeline-bars-sequence">
+                {selectedRegion.timeline.map((slot, idx) => (
+                  <div key={idx} className="timeline-col-block">
+                    <div className="timeline-time-label">{slot.time}</div>
+                    
+                    <div className="ascii-block-column">
+                      <div className="bar-track-outer">
+                        <div 
+                          className={`bar-fill-block block-${slot.level}`}
+                          style={{ height: `${slot.val}%` }}
+                        ></div>
+                      </div>
+                      <span className="block-val-readout">{slot.val}%</span>
+                    </div>
+
+                    <div className="timeline-rain-rate">{slot.text}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.convergence}</strong>
-            <span className="chip-source">Coastline Wind Collisions</span>
           </div>
 
-          <div className="evidence-badge-chip chip-red">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">CTT ↓</span>
-              <span className="chip-sub">EXPLOSIVE UPDRAFT</span>
+          {/* BOTTOM SECTION: METEOROLOGICAL EVIDENCE */}
+          <div className="ops-meteorological-evidence-panel">
+            <div className="evidence-panel-header">
+              <Activity size={16} className="text-emerald" />
+              <span className="evidence-title">METEOROLOGICAL EVIDENCE</span>
+              <span className="evidence-sensors-tag">FUSED SATELLITE + IMDAA PREDICTIVE MATRIX</span>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.ctt}</strong>
-            <span className="chip-source">INSAT-3DR TIR Cooling</span>
-          </div>
 
-          <div className="evidence-badge-chip chip-blue">
-            <div className="badge-chip-top">
-              <span className="chip-symbol">QPE ↑</span>
-              <span className="chip-sub">PRECIP ESTIMATION</span>
+            <div className="evidence-badges-row">
+              <div className="evidence-badge-chip chip-cyan">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">IWV ↑</span>
+                  <span className="chip-sub">MOISTURE FUEL</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.iwv}</strong>
+                <span className="chip-source">INSAT-3D WV ({selectedRegion.precursors.iwvRate || '+14.2 mm/hr'})</span>
+              </div>
+
+              <div className="evidence-badge-chip chip-amber">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">CAPE ↑</span>
+                  <span className="chip-sub">BUOYANCY ENERGY</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.cape}</strong>
+                <span className="chip-source">IMDAA Thermodynamic</span>
+              </div>
+
+              <div className="evidence-badge-chip chip-emerald">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">CIN ↓</span>
+                  <span className="chip-sub">CAP EROSION</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.cin}</strong>
+                <span className="chip-source">Inversion Breached</span>
+              </div>
+
+              <div className="evidence-badge-chip chip-purple">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">Convergence ↑</span>
+                  <span className="chip-sub">VERTICAL LIFT</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.convergence}</strong>
+                <span className="chip-source">Coastline Wind Collisions</span>
+              </div>
+
+              <div className="evidence-badge-chip chip-red">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">CTT ↓</span>
+                  <span className="chip-sub">EXPLOSIVE UPDRAFT</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.ctt}</strong>
+                <span className="chip-source">INSAT-3DR TIR Cooling</span>
+              </div>
+
+              <div className="evidence-badge-chip chip-blue">
+                <div className="badge-chip-top">
+                  <span className="chip-symbol">QPE ↑</span>
+                  <span className="chip-sub">PRECIP ESTIMATION</span>
+                </div>
+                <strong className="chip-metric">{selectedRegion.precursors.qpe}</strong>
+                <span className="chip-source">Doppler Radar Satellite QPE</span>
+              </div>
             </div>
-            <strong className="chip-metric">{selectedRegion.precursors.qpe}</strong>
-            <span className="chip-source">Doppler Radar Satellite QPE</span>
-          </div>
-        </div>
 
-        {/* Model Interpretation Banner */}
-        <div className="model-interpretation-footer-banner">
-          <div className="model-interp-label">MODEL INTERPRETATION:</div>
-          <div className="model-interp-text">
-            {selectedRegion.interpretation}
+            <div className="model-interpretation-footer-banner">
+              <div className="model-interp-label">MODEL INTERPRETATION:</div>
+              <div className="model-interp-text">
+                {selectedRegion.interpretation}
+              </div>
+              <button className="xai-inspect-btn" onClick={() => onOpenXaiModal(selectedRegionId)}>
+                <span>View Attention Weights</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
-          <button className="xai-inspect-btn" onClick={onOpenXaiModal}>
-            <span>View Attention Weights</span>
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

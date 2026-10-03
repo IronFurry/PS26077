@@ -13,6 +13,7 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
+import { dispatchAlert } from '../../services/api';
 
 export default function DispatchModal({ isOpen, onClose }) {
   const [selectedChannels, setSelectedChannels] = useState({
@@ -26,6 +27,7 @@ export default function DispatchModal({ isOpen, onClose }) {
   const [severity, setSeverity] = useState('Severe');
   const [dispatched, setDispatched] = useState(false);
   const [dispatchProgress, setDispatchProgress] = useState(0);
+  const [dispatchReceipt, setDispatchReceipt] = useState(null);
 
   if (!isOpen) return null;
 
@@ -33,13 +35,21 @@ export default function DispatchModal({ isOpen, onClose }) {
     setSelectedChannels(prev => ({ ...prev, [channel]: !prev[channel] }));
   };
 
-  const handleDispatch = () => {
+  const handleDispatch = async () => {
     setDispatchProgress(25);
-    setTimeout(() => setDispatchProgress(65), 400);
-    setTimeout(() => {
+    try {
+      setTimeout(() => setDispatchProgress(65), 250);
+      const res = await dispatchAlert({
+        targetZone,
+        severity,
+        selectedChannels
+      });
+      setDispatchReceipt(res);
       setDispatchProgress(100);
       setDispatched(true);
-    }, 900);
+    } catch (err) {
+      console.error('Dispatch failed:', err);
+    }
   };
 
   return (
@@ -74,7 +84,11 @@ export default function DispatchModal({ isOpen, onClose }) {
               <div className="dispatch-summary-box">
                 <div className="summary-row">
                   <span>CAP Alert ID:</span>
-                  <code>IN-MoES-NCMRWF-20261003-0824</code>
+                  <code>{dispatchReceipt?.dispatchId || 'CAP-IN-824192'}</code>
+                </div>
+                <div className="summary-row">
+                  <span>Broadcast Status:</span>
+                  <strong className="text-emerald">{dispatchReceipt?.status || 'BROADCAST_SUCCESS'}</strong>
                 </div>
                 <div className="summary-row">
                   <span>Recipients Reached:</span>

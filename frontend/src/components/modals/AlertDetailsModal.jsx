@@ -23,7 +23,7 @@ export default function AlertDetailsModal({ isOpen, onClose, activeLocation }) {
         {/* Header */}
         <div className="modal-header header-crimson">
           <div className="header-left-title">
-            <span className="modal-alert-icon">🚨</span>
+            <ShieldAlert size={20} className="text-red-400" />
             <div>
               <h2 className="modal-title">{SEVERE_ALERT.title}</h2>
               <span className="modal-subtitle">Issued by NCMRWF AI Nowcasting Engine • {SEVERE_ALERT.timestamp}</span>

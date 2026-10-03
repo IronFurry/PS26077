@@ -1,15 +1,18 @@
-import React from 'react';
-import LiveMap from '../map/LiveMap';
+import RiskMap from '../map/RiskMap';
 
 /**
  * WeatherMap — Citizen Portal Map Panel
- * Wraps the real react-leaflet LiveMap component.
- * The old SVG-based implementation has been replaced with the interactive map.
+ * Renders the reusable MapLibre GL RiskMap component in citizen mode.
  */
-export default function WeatherMap({ activeLocation }) {
+export default function WeatherMap({ activeLocation, onSelectLocation, onOpenXai }) {
   return (
     <div className="weather-map-card" style={{ padding: 0, overflow: 'hidden' }}>
-      <LiveMap activeLocation={activeLocation} portalMode="citizen" />
+      <RiskMap
+        mode="citizen"
+        activeLocation={activeLocation}
+        onSelectLocation={onSelectLocation}
+        onOpenXai={onOpenXai}
+      />
     </div>
   );
 }

@@ -1,0 +1,157 @@
+/* ==========================================================================
+   Main Layout Shell (Sidebar + Content)
+   ========================================================================== */
+.app-body-layout {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  position: relative;
+}
+
+/* ==========================================================================
+   Left Sidebar
+   ========================================================================== */
+.app-sidebar {
+  width: 200px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 12px 16px;
+  position: sticky;
+  top: 68px;
+  height: calc(100vh - 68px);
+  user-select: none;
+}
+
+.sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.sidebar-nav-btn.active {
+  background: #192b4a;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sidebar-badge-count {
+  background: #ef4444;
+  color: white;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.sidebar-badge-live {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Sidebar Bottom: Location card & tagline */
+.sidebar-bottom-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.sidebar-location-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-location-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.location-pin-icon {
+  color: var(--accent-cyan);
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.location-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.location-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.location-chevron {
+  color: var(--text-muted);
+}
+
+.sidebar-tagline-block {
+  padding: 0 4px;
+}
+
+.tagline-line1 {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.tagline-line2 {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.sidebar-contour-graphic {
+  width: 100%;
+  height: 48px;
+  overflow: hidden;
+  opacity: 0.6;
+}
+

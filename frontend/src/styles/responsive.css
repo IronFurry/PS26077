@@ -1,0 +1,50 @@
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 1280px) {
+  .citizen-dashboard-layout {
+    flex-direction: column;
+  }
+  .right-alert-column {
+    width: 100%;
+  }
+  .officials-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .precursors-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .forecast-and-area-grid {
+    grid-template-columns: 1fr;
+  }
+  .precursors-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .app-sidebar {
+    width: 72px;
+    padding: 16px 8px;
+  }
+  .nav-label, .sidebar-tagline-block, .location-sub, .location-title, .location-chevron {
+    display: none;
+  }
+  .sidebar-location-card {
+    justify-content: center;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .search-wrapper {
+    display: none;
+  }
+  .precursors-grid {
+    grid-template-columns: 1fr;
+  }
+  .dos-donts-grid, .channels-grid, .form-row-2, .feature-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

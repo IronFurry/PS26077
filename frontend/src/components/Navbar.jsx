@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   CloudRain, 
   Search, 
@@ -9,16 +9,20 @@ import {
   Radio, 
   ExternalLink,
   MapPin,
+  Globe,
+  Loader2,
   CheckCircle2,
-  X
+  X,
+  Compass
 } from 'lucide-react';
+import { searchLocationsOnline, directGeocode } from '../utils/geocoding';
 
 export default function Navbar({ 
   activePortal, 
   setActivePortal, 
   activeLocation, 
   setActiveLocation, 
-  locations,
+  locations = [],
   onOpenAlerts,
   notificationsCount = 3 
 }) {
@@ -26,22 +30,66 @@ export default function Navbar({
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIdx, setHighlightedIdx] = useState(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [onlineResults, setOnlineResults] = useState([]);
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
 
   const searchWrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const debounceTimerRef = useRef(null);
 
-  // Filter locations by query
-  const filteredLocations = locations.filter(loc =>
+  // Local preset matches (instant, 0 latency)
+  const localMatches = (locations || []).filter(loc =>
+    !searchQuery ||
     loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    loc.district.toLowerCase().includes(searchQuery.toLowerCase())
+    (loc.district && loc.district.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Reset highlight when filter changes
+  // Combine local matches and online OSM results
+  const allResults = [
+    ...localMatches.map(loc => ({ ...loc, _source: 'local' })),
+    ...onlineResults.map(loc => ({ ...loc, _source: 'online' }))
+  ];
+
+  // Debounced online search as user types
   useEffect(() => {
-    setHighlightedIdx(0);
+    const q = searchQuery.trim();
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (!q || q.length < 2) {
+      setOnlineResults([]);
+      setIsSearchingOnline(false);
+      return;
+    }
+
+    setIsSearchingOnline(true);
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await searchLocationsOnline(q);
+        // Exclude any results that match already visible local zones
+        const filteredOnline = results.filter(
+          onl => !localMatches.some(loc => loc.name.toLowerCase() === onl.name.toLowerCase())
+        );
+        setOnlineResults(filteredOnline);
+      } catch (err) {
+        console.error('Online geocoding error:', err);
+      } finally {
+        setIsSearchingOnline(false);
+      }
+    }, 280);
+
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
   }, [searchQuery]);
 
-  // Close dropdown when clicking outside
+  // Reset highlight index when results change
+  useEffect(() => {
+    setHighlightedIdx(0);
+  }, [searchQuery, onlineResults.length]);
+
+  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
@@ -55,19 +103,53 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showProfileMenu]);
 
-  const selectLocation = (loc) => {
+  // Select a location and notify map & dashboards
+  const selectLocation = useCallback((loc) => {
+    if (!loc) return;
     setActiveLocation(loc);
     setSearchQuery('');
+    setOnlineResults([]);
     setShowDropdown(false);
     inputRef.current?.blur();
+  }, [setActiveLocation]);
+
+  // Handle direct Enter key submission: if user typed any place and pressed Enter
+  const handleDirectSearch = async () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+
+    // 1. If currently highlighted item in dropdown exists, use it
+    if (allResults[highlightedIdx]) {
+      selectLocation(allResults[highlightedIdx]);
+      return;
+    }
+
+    // 2. Direct online geocoding for the query
+    setIsSearchingOnline(true);
+    try {
+      const match = await directGeocode(q);
+      if (match) {
+        selectLocation(match);
+      }
+    } catch (e) {
+      console.error('Direct geocode error:', e);
+    } finally {
+      setIsSearchingOnline(false);
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (!showDropdown) return;
+    if (!showDropdown) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+        setShowDropdown(true);
+      }
+      return;
+    }
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setHighlightedIdx(i => Math.min(i + 1, filteredLocations.length - 1));
+        setHighlightedIdx(i => Math.min(i + 1, Math.max(0, allResults.length - 1)));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -75,9 +157,7 @@ export default function Navbar({
         break;
       case 'Enter':
         e.preventDefault();
-        if (filteredLocations[highlightedIdx]) {
-          selectLocation(filteredLocations[highlightedIdx]);
-        }
+        handleDirectSearch();
         break;
       case 'Escape':
         setShowDropdown(false);
@@ -115,7 +195,7 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* ---- Functional Location Search Bar ---- */}
+        {/* ---- Global Location Search Bar (Any City / Region / Address) ---- */}
         <div className="search-wrapper" ref={searchWrapperRef}>
           <Search size={15} className="search-icon" />
 
@@ -123,7 +203,7 @@ export default function Navbar({
             ref={inputRef}
             type="text"
             className="search-input"
-            placeholder={`📍 ${activeLocation?.name ?? 'Search location…'}`}
+            placeholder={activeLocation?.name ? `📍 ${activeLocation.name} (Search any location…)` : 'Search any city, district or location…'}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -133,72 +213,139 @@ export default function Navbar({
             onKeyDown={handleKeyDown}
             autoComplete="off"
             spellCheck={false}
-            aria-label="Search monitoring location"
+            aria-label="Search any location worldwide"
             aria-expanded={showDropdown}
             aria-haspopup="listbox"
           />
 
-          {/* Clear button — shows when there's a query */}
-          {searchQuery && (
-            <button
-              className="search-clear-btn"
-              onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
-              aria-label="Clear search"
-            >
-              <X size={13} />
-            </button>
-          )}
+          {/* Activity indicator: Spinner if searching online, or Clear button */}
+          <div className="search-input-actions">
+            {isSearchingOnline ? (
+              <Loader2 size={14} className="search-loading-spinner" />
+            ) : searchQuery ? (
+              <button
+                className="search-clear-btn"
+                onClick={() => { setSearchQuery(''); setOnlineResults([]); inputRef.current?.focus(); }}
+                aria-label="Clear search"
+              >
+                <X size={13} />
+              </button>
+            ) : null}
+          </div>
 
-          {/* Dropdown results */}
+          {/* Dropdown Results */}
           {showDropdown && (
             <div className="search-dropdown" role="listbox">
-              <div className="dropdown-header">
-                Nowcast Monitoring Zones — 2 to 6h Lead Time
-              </div>
-
-              {filteredLocations.length === 0 ? (
-                <div className="search-no-results">
-                  <Search size={16} style={{ opacity: 0.4 }} />
-                  <span>No locations found for "<strong>{searchQuery}</strong>"</span>
+              
+              {/* If no query, show quick suggestion header */}
+              {!searchQuery && (
+                <div className="dropdown-header">
+                  Active Hazard Monitoring Zones
                 </div>
-              ) : (
-                filteredLocations.map((loc, idx) => (
-                  <div
-                    key={loc.id}
-                    role="option"
-                    aria-selected={activeLocation?.id === loc.id}
-                    className={`search-dropdown-item 
-                      ${activeLocation?.id === loc.id ? 'active' : ''} 
-                      ${highlightedIdx === idx ? 'highlighted' : ''}`}
-                    onMouseEnter={() => setHighlightedIdx(idx)}
-                    onClick={() => selectLocation(loc)}
-                  >
-                    <div className="loc-info">
-                      <MapPin size={13} className="pin-icon" />
-                      <span className="loc-name">{loc.name}</span>
-                      <span className="loc-district">{loc.district}</span>
-                    </div>
-                    <div className="loc-right">
-                      <span
-                        className="risk-pill"
-                        style={{
-                          background: `${riskColor[loc.risk] ?? '#6b7280'}22`,
-                          color: riskColor[loc.risk] ?? '#6b7280',
-                          border: `1px solid ${riskColor[loc.risk] ?? '#6b7280'}55`,
-                        }}
-                      >
-                        {loc.risk}
-                      </span>
-                      {activeLocation?.id === loc.id && (
-                        <CheckCircle2 size={13} style={{ color: '#00d2ff', flexShrink: 0 }} />
-                      )}
-                    </div>
-                  </div>
-                ))
               )}
 
+              {/* Local Monitoring Zones */}
+              {localMatches.length > 0 && (
+                <div className="search-group">
+                  {searchQuery && (
+                    <div className="dropdown-sub-header">
+                      <Radio size={12} className="text-red pulse-fast" />
+                      <span>Nowcast Radar Zones</span>
+                    </div>
+                  )}
+                  {localMatches.map((loc, idx) => {
+                    const isSelected = activeLocation?.id === loc.id;
+                    const isHighlighted = highlightedIdx === idx;
+                    return (
+                      <div
+                        key={loc.id}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`search-dropdown-item ${isSelected ? 'active' : ''} ${isHighlighted ? 'highlighted' : ''}`}
+                        onMouseEnter={() => setHighlightedIdx(idx)}
+                        onClick={() => selectLocation(loc)}
+                      >
+                        <div className="loc-info">
+                          <MapPin size={14} className="pin-icon" />
+                          <div className="loc-text-col">
+                            <span className="loc-name">{loc.name}</span>
+                            <span className="loc-district">{loc.district}</span>
+                          </div>
+                        </div>
+                        <div className="loc-right">
+                          <span
+                            className="risk-pill"
+                            style={{
+                              background: `${riskColor[loc.risk] ?? '#6b7280'}22`,
+                              color: riskColor[loc.risk] ?? '#6b7280',
+                              border: `1px solid ${riskColor[loc.risk] ?? '#6b7280'}55`,
+                            }}
+                          >
+                            {loc.risk}
+                          </span>
+                          {isSelected && (
+                            <CheckCircle2 size={13} style={{ color: '#00d2ff', flexShrink: 0 }} />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Online OSM Geocoded Results (Any location worldwide) */}
+              {onlineResults.length > 0 && (
+                <div className="search-group">
+                  <div className="dropdown-sub-header">
+                    <Globe size={12} style={{ color: '#00d2ff' }} />
+                    <span>OpenStreetMap Worldwide Places</span>
+                  </div>
+                  {onlineResults.map((loc, idx) => {
+                    const combinedIdx = localMatches.length + idx;
+                    const isSelected = activeLocation?.name === loc.name;
+                    const isHighlighted = highlightedIdx === combinedIdx;
+                    return (
+                      <div
+                        key={loc.id}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`search-dropdown-item ${isSelected ? 'active' : ''} ${isHighlighted ? 'highlighted' : ''}`}
+                        onMouseEnter={() => setHighlightedIdx(combinedIdx)}
+                        onClick={() => selectLocation(loc)}
+                      >
+                        <div className="loc-info">
+                          <Compass size={14} style={{ color: '#38bdf8', flexShrink: 0 }} />
+                          <div className="loc-text-col">
+                            <span className="loc-name">{loc.name}</span>
+                            <span className="loc-district">{loc.district}</span>
+                          </div>
+                        </div>
+                        <div className="loc-right">
+                          <span className="search-badge-osm">Fly to Area</span>
+                          {isSelected && (
+                            <CheckCircle2 size={13} style={{ color: '#00d2ff', flexShrink: 0 }} />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* No results empty state */}
+              {allResults.length === 0 && !isSearchingOnline && (
+                <div className="search-no-results" onClick={handleDirectSearch}>
+                  <Compass size={16} style={{ opacity: 0.5, color: '#00d2ff' }} />
+                  <div>
+                    <span>Press <strong>Enter</strong> to search <strong>"{searchQuery}"</strong> globally</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom footer hint */}
               <div className="dropdown-footer">
-                {filteredLocations.length} zone{filteredLocations.length !== 1 ? 's' : ''} • ↑↓ navigate • Enter to select • Esc to close
+                <span>{allResults.length} locations available</span>
+                <span className="footer-keys">↑↓ Navigate • Enter to Fly • Esc to Close</span>
               </div>
             </div>
           )}
@@ -258,7 +405,7 @@ export default function Navbar({
             <div className="profile-dropdown-card">
               <div className="profile-header">
                 <strong>Aryan Kate</strong>
-                <span>📍 {activeLocation?.name} ({activeLocation?.district})</span>
+                <span>📍 {activeLocation?.name} ({activeLocation?.district || 'India'})</span>
               </div>
               <div className="profile-divider"></div>
               <button 
