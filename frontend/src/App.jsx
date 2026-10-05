@@ -206,6 +206,10 @@ function App() {
           setShowAlertModal(false);
           handleOpenXai(reg || activeLocation);
         }}
+        onOpenDispatchModal={() => {
+          setShowAlertModal(false);
+          setShowDispatchModal(true);
+        }}
         onViewOnMap={() => {
           setShowAlertModal(false);
           if (activePortal !== 'citizen') {

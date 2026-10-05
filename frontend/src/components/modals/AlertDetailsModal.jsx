@@ -37,7 +37,8 @@ import {
   Wind,
   CloudLightning,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Users
 } from 'lucide-react';
 import {
   ALERT_LANGUAGES,
@@ -81,6 +82,7 @@ export default function AlertDetailsModal({
   alertData,
   onViewOnMap,
   onOpenXai,
+  onOpenDispatchModal,
   activePortal
 }) {
   const [lang, setLang] = useState('en'); // 'en' | 'hi' | 'mr'
@@ -560,10 +562,12 @@ export default function AlertDetailsModal({
                 <button
                   className="action-btn-pill reminder-hero-btn"
                   onClick={() => {
-                    const dispatchBtn = document.querySelector('.dispatch-btn, .sidebar-nav-btn[aria-label="Alert Dispatch"], .sidebar-nav-btn:nth-child(3)');
-                    if (dispatchBtn) {
-                      onClose();
-                      dispatchBtn.click();
+                    onClose();
+                    if (onOpenDispatchModal) {
+                      onOpenDispatchModal();
+                    } else {
+                      const dispatchBtn = document.querySelector('.dispatch-btn, .cap-dispatch-btn-wire');
+                      if (dispatchBtn) dispatchBtn.click();
                     }
                   }}
                   style={{ flex: 1, justifyContent: 'center', background: 'rgba(239, 68, 68, 0.15)', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}

@@ -63,6 +63,10 @@ export default function OfficialsDashboard({
     if (!currentTab) return;
     if (currentTab === 'mtl-maps') setActiveNav('MAP');
     else if (currentTab === 'home') setActiveNav('OVERVIEW');
+    else if (currentTab === 'alerts') {
+      setActiveNav('HAZARDS');
+      if (onOpenDispatchModal) onOpenDispatchModal();
+    }
     else if (currentTab === 'xai') {
       setActiveNav('XAI');
       onOpenXaiModal(selectedRegionId);
