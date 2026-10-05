@@ -510,10 +510,10 @@ export default function OfficialsDashboard({
             <div>
               <h3 style={{ fontSize: '16px', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Database size={16} className="text-emerald" />
-                <span>Numerical Precursors Telemetry Matrix</span>
+                <span>Numerical Precursors Telemetry Matrix (8 Core Meteorological Channels)</span>
               </h3>
               <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0' }}>
-                Single source of truth metrics verified across MoES-NCMRWF data pipelines
+                Single source of truth metrics verified across MoES-NCMRWF geostationary satellite & Doppler radar data pipelines
               </p>
             </div>
             <button className="ops-action-btn simulate-btn-wire" onClick={handleSimulate}>
@@ -528,13 +528,14 @@ export default function OfficialsDashboard({
                 <tr>
                   <th>Region</th>
                   <th>Risk %</th>
-                  <th>IWV (mm)</th>
-                  <th>IWV Rate (mm/hr)</th>
-                  <th>CAPE</th>
-                  <th>CIN</th>
-                  <th>Convergence</th>
-                  <th>CTT Drop</th>
-                  <th>Radar QPE</th>
+                  <th>IR 10.8 (CTT)</th>
+                  <th>WV 6.2 (Moisture)</th>
+                  <th>VIR (Optical Depth)</th>
+                  <th>CAPE (Instability)</th>
+                  <th>Surface Pressure</th>
+                  <th>Wind Vector U (Zonal)</th>
+                  <th>Wind Vector V (Meridional)</th>
+                  <th>Elevation (CartoDEM)</th>
                   <th>ETA</th>
                 </tr>
               </thead>
@@ -543,13 +544,14 @@ export default function OfficialsDashboard({
                   <tr key={r.id} style={{ background: selectedRegionId === r.id ? 'rgba(56, 189, 248, 0.08)' : 'transparent' }}>
                     <td><strong>{r.name}</strong></td>
                     <td className={r.riskScore >= 80 ? 'text-red' : 'text-amber'}><strong>{r.riskProb}</strong></td>
-                    <td className="text-cyan">{r.precursors.iwv}</td>
-                    <td className="text-cyan">{r.precursors.iwvRate}</td>
+                    <td className="text-red"><strong>{r.precursors.ir108}</strong></td>
+                    <td className="text-cyan">{r.precursors.wv62}</td>
+                    <td className="text-amber">{r.precursors.vir}</td>
                     <td className="text-amber">{r.precursors.cape}</td>
-                    <td className="text-emerald">{r.precursors.cin}</td>
-                    <td className="text-purple">{r.precursors.convergence}</td>
-                    <td className="text-red">{r.precursors.ctt}</td>
-                    <td className="text-blue">{r.precursors.qpe}</td>
+                    <td className="text-emerald">{r.precursors.surfacePressure}</td>
+                    <td className="text-purple">{r.precursors.windU}</td>
+                    <td className="text-purple">{r.precursors.windV}</td>
+                    <td className="text-blue">{r.precursors.elevation}</td>
                     <td>{r.eta}</td>
                   </tr>
                 ))}

@@ -176,7 +176,31 @@ export function getNowcastFrame(stepIndex = 0) {
 // Baseline Frame 0 for initial load and backward compatibility
 export const NOWCAST_STORM_CELL = getNowcastFrame(0);
 
-// Administrative Risk-colored Zone Polygons for Vasai, Nalasopara, and Virar
+/**
+ * Generates a smooth circular GeoJSON Polygon geometry centered at (centerLon, centerLat) with radius (radiusKm).
+ */
+export function createGeoJsonCircle(centerLon, centerLat, radiusKm = 4.5, numPoints = 64) {
+  const coords = [];
+  const kmInLat = 1 / 110.574;
+  const kmInLon = 1 / (111.320 * Math.cos((centerLat * Math.PI) / 180));
+
+  for (let i = 0; i <= numPoints; i++) {
+    const theta = (i * 2 * Math.PI) / numPoints;
+    const dx = radiusKm * Math.cos(theta);
+    const dy = radiusKm * Math.sin(theta);
+
+    const lon = centerLon + dx * kmInLon;
+    const lat = centerLat + dy * kmInLat;
+    coords.push([lon, lat]);
+  }
+
+  return {
+    type: 'Polygon',
+    coordinates: [coords],
+  };
+}
+
+// Administrative Risk-colored Circular Hazard Zones for Vasai, Nalasopara, Virar, Mumbai, and Thane
 export const RISK_ZONE_POLYGONS = {
   type: 'FeatureCollection',
   features: [
@@ -189,18 +213,7 @@ export const RISK_ZONE_POLYGONS = {
         riskProb: '88%',
         color: '#f97316',
       },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [72.76, 19.32],
-            [72.85, 19.32],
-            [72.86, 19.39],
-            [72.78, 19.39],
-            [72.76, 19.32],
-          ],
-        ],
-      },
+      geometry: createGeoJsonCircle(72.8093, 19.3639, 4.5),
     },
     {
       type: 'Feature',
@@ -211,18 +224,7 @@ export const RISK_ZONE_POLYGONS = {
         riskProb: '94%',
         color: '#ef4444',
       },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [72.76, 19.39],
-            [72.86, 19.39],
-            [72.85, 19.44],
-            [72.77, 19.44],
-            [72.76, 19.39],
-          ],
-        ],
-      },
+      geometry: createGeoJsonCircle(72.7989, 19.4167, 4.8),
     },
     {
       type: 'Feature',
@@ -233,18 +235,29 @@ export const RISK_ZONE_POLYGONS = {
         riskProb: '76%',
         color: '#eab308',
       },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [72.77, 19.44],
-            [72.85, 19.44],
-            [72.86, 19.51],
-            [72.78, 19.51],
-            [72.77, 19.44],
-          ],
-        ],
+      geometry: createGeoJsonCircle(72.8000, 19.4700, 4.2),
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 'mumbai',
+        name: 'Mumbai Suburbs',
+        risk: 'Moderate',
+        riskProb: '62%',
+        color: '#3b82f6',
       },
+      geometry: createGeoJsonCircle(72.8777, 19.0760, 5.0),
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 'thane',
+        name: 'Thane North',
+        risk: 'Moderate',
+        riskProb: '58%',
+        color: '#a855f7',
+      },
+      geometry: createGeoJsonCircle(72.9781, 19.2183, 4.5),
     },
   ],
 };
