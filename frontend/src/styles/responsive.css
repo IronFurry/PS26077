@@ -46,5 +46,13 @@
   .dos-donts-grid, .channels-grid, .form-row-2, .feature-cards-grid {
     grid-template-columns: 1fr;
   }
+  .hourly-slots-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .timeline-bars-sequence {
+    grid-template-columns: repeat(7, minmax(28px, 1fr));
+    overflow-x: auto;
+  }
 }
 

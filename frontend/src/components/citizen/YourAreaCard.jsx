@@ -1,7 +1,7 @@
 import React from 'react';
-import { MapPin, AlertTriangle, Waves, Zap, ChevronRight } from 'lucide-react';
+import { MapPin, AlertTriangle, Waves, Zap, ChevronRight, Crosshair } from 'lucide-react';
 
-export default function YourAreaCard({ activeLocation, onOpenAlertDetails }) {
+export default function YourAreaCard({ activeLocation, onOpenAlertDetails, onDetectGps, isLocatingGps }) {
   return (
     <div className="your-area-card">
       <div className="your-area-header">
@@ -9,9 +9,31 @@ export default function YourAreaCard({ activeLocation, onOpenAlertDetails }) {
           <MapPin size={16} className="text-blue" />
           <div className="area-labels">
             <span className="card-heading">Your Area</span>
-            <span className="area-subname">{activeLocation?.name || 'Vasai Gaon'}</span>
+            <span className="area-subname">
+              {activeLocation?.name || 'Vasai Gaon'}
+              {activeLocation?.isGps && <span className="gps-pill-badge">GPS</span>}
+            </span>
           </div>
         </div>
+
+        {onDetectGps && (
+          <button
+            type="button"
+            className={`your-area-gps-btn ${isLocatingGps ? 'locating' : ''}`}
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await onDetectGps(true);
+              } catch (err) {
+                console.log('GPS error:', err);
+              }
+            }}
+            title="Detect my location via GPS"
+          >
+            <Crosshair size={13} className={isLocatingGps ? 'spin-fast text-cyan' : ''} />
+            <span>{isLocatingGps ? 'Locating…' : 'Locate Me'}</span>
+          </button>
+        )}
       </div>
 
       {/* Warning banner */}

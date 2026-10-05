@@ -82,7 +82,7 @@ export default function SafetyGuideModal({ isOpen, onClose }) {
                     <li>Move immediately to higher ground or upper storeys of pucca buildings.</li>
                     <li>Turn off main electrical power switches and gas valves before floodwaters enter.</li>
                     <li>Keep an emergency kit ready: bottled water, torch, medicine, power bank, and ID documents in a waterproof pouch.</li>
-                    <li>Monitor SkyWatch real-time radar and ward advisory updates continuously.</li>
+                    <li>Monitor STORMS real-time radar and ward advisory updates continuously.</li>
                   </ul>
                 </div>
 
@@ -107,7 +107,7 @@ export default function SafetyGuideModal({ isOpen, onClose }) {
               <div className="guide-intro-banner">
                 <h3>Cloudbursts: High-Intensity Rainfall Response</h3>
                 <p>
-                  A cloudburst produces sudden, concentrated precipitation exceeding 100 mm/hour within a small geographic area (10-30 km²). SkyWatch captures IWV moisture pools to provide 2 to 6 hours lead time.
+                  A cloudburst produces sudden, concentrated precipitation exceeding 100 mm/hour within a small geographic area (10-30 km²). STORMS captures IWV moisture pools to provide 2 to 6 hours lead time.
                 </p>
               </div>
 
@@ -133,7 +133,7 @@ export default function SafetyGuideModal({ isOpen, onClose }) {
                   <ul className="guide-list">
                     <li>Do not take shelter under tin sheds, billboards, or weakened structures.</li>
                     <li>Avoid parking vehicles near storm water drains or natural creek banks.</li>
-                    <li>Avoid spreading unverified rumors on social media; rely on MoES/NCMRWF official SkyWatch alerts.</li>
+                    <li>Avoid spreading unverified rumors on social media; rely on MoES/NCMRWF official STORMS alerts.</li>
                   </ul>
                 </div>
               </div>

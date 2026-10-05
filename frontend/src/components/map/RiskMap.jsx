@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import Map, { NavigationControl, Marker, Source, Layer } from 'react-map-gl/maplibre';
+import Map, { NavigationControl, GeolocateControl, Marker, Source, Layer } from 'react-map-gl/maplibre';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Play, Pause, Navigation, Clock } from 'lucide-react';
+import { Play, Pause, Navigation, Clock, Crosshair } from 'lucide-react';
 import { LOCATIONS } from '../../data/weatherData';
+import { getDistanceKm, findClosestStation } from '../../utils/geolocation';
 import { getNowcastFrame, RISK_ZONE_POLYGONS, FORECAST_STEPS } from '../../data/mockNowcast';
 
 // Configure MapLibre Web Worker URL for Vite
@@ -66,7 +67,7 @@ function getRiskColor(risk) {
 }
 
 /**
- * Reusable RiskMap Component for SkyWatch
+ * Reusable RiskMap Component for STORMS
  * @param {'citizen' | 'officials'} mode - Dashboard display mode
  * @param {Object | string} activeLocation - Current location object or location ID
  * @param {Array} locations - List of locations (defaults to LOCATIONS)
@@ -249,7 +250,40 @@ export default function RiskMap({
     }
   }, [locations, handleLocationClick]);
 
-  const timeLabels = ['Now', '+1h', '+2h', '+3h'];
+  const timeLabels = ['Now', '+1h', '+2h', '+3h', '+4h', '+5h', '+6h'];
+
+  const handleGeolocate = useCallback((e) => {
+    if (e?.coords && onSelectLocation) {
+      const { latitude, longitude, accuracy } = e.coords;
+      const closest = findClosestStation(latitude, longitude, LOCATIONS);
+      const dist = getDistanceKm(latitude, longitude, closest.lat, closest.lon);
+      if (dist <= 35) {
+        onSelectLocation({
+          ...closest,
+          actualLat: latitude,
+          actualLon: longitude,
+          accuracy: Math.round(accuracy || 20),
+          isGps: true,
+          isClosestStation: true,
+          gpsLabel: `Current Location (~${closest.name})`,
+        });
+      } else {
+        onSelectLocation({
+          id: `gps_${Math.round(latitude * 1000)}_${Math.round(longitude * 1000)}`,
+          name: `Current Location (${latitude.toFixed(2)}, ${longitude.toFixed(2)})`,
+          district: 'Detected GPS Area',
+          lat: latitude,
+          lon: longitude,
+          accuracy: Math.round(accuracy || 20),
+          isGps: true,
+          risk: 'Moderate',
+          riskProb: '64%',
+          eta: '45 min',
+          gpsLabel: 'Device GPS Location',
+        });
+      }
+    }
+  }, [onSelectLocation]);
 
   return (
     <div
@@ -281,6 +315,15 @@ export default function RiskMap({
         maxPitch={85}
         onLoad={flyToActive}
       >
+        {/* Browser Geolocation GPS Control */}
+        <GeolocateControl 
+          position="bottom-right" 
+          trackUserLocation={true} 
+          showUserLocation={true}
+          showAccuracyCircle={true}
+          positionOptions={{ enableHighAccuracy: true }}
+          onGeolocate={handleGeolocate}
+        />
         {/* Native Zoom & Compass Controls */}
         <NavigationControl position="bottom-right" showCompass={true} showZoom={true} />
 

@@ -8,7 +8,8 @@ import {
   MapPin, 
   ChevronRight,
   ShieldCheck,
-  Activity
+  Activity,
+  Crosshair
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -18,14 +19,15 @@ export default function Sidebar({
   onLocationClick,
   onOpenAlerts,
   onOpenSafetyGuide,
-  activePortal
+  activePortal,
+  onDetectGps,
+  isLocatingGps = false
 }) {
   const citizenNavItems = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'map', label: 'Map', icon: Map },
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, badge: 3 },
-    { id: 'safety', label: 'Safety Guide', icon: BookOpen },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'map', label: 'Live Weather Map', icon: Map },
+    { id: 'alerts', label: 'Active Alerts', icon: AlertTriangle, badge: 3 },
+    { id: 'safety', label: 'Safety Guidelines', icon: BookOpen },
   ];
 
   const officialsNavItems = [
@@ -43,6 +45,15 @@ export default function Sidebar({
       onOpenAlerts();
     } else if (id === 'safety') {
       onOpenSafetyGuide();
+    } else if (id === 'map') {
+      setCurrentTab('map');
+      const mapEl = document.querySelector('#live-weather-map-section, .weather-map-card, .weather-map-container, .risk-map-container');
+      if (mapEl) {
+        mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else if (id === 'home') {
+      setCurrentTab('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       setCurrentTab(id);
     }
@@ -76,12 +87,32 @@ export default function Sidebar({
 
       <div className="sidebar-bottom-section">
         {/* Location selector card */}
-        <div className="sidebar-location-card" onClick={onLocationClick}>
+        <div 
+          className={`sidebar-location-card ${activeLocation?.isGps ? 'gps-active-card' : ''}`} 
+          onClick={async () => {
+            if (onDetectGps) {
+              try {
+                await onDetectGps(true);
+                return;
+              } catch {}
+            }
+            if (onLocationClick) onLocationClick();
+          }}
+          title="Click to detect device GPS location or view alert details"
+        >
           <div className="location-pin-icon">
-            <MapPin size={16} />
+            {isLocatingGps ? (
+              <Crosshair size={16} className="spin-fast text-cyan" />
+            ) : activeLocation?.isGps ? (
+              <Crosshair size={16} className="text-cyan" />
+            ) : (
+              <MapPin size={16} />
+            )}
           </div>
           <div className="location-info">
-            <span className="location-sub">Your location</span>
+            <span className="location-sub">
+              {activeLocation?.isGps ? 'GPS Location' : 'Your location'}
+            </span>
             <span className="location-title">{activeLocation?.name || 'Vasai Gaon'}</span>
           </div>
           <ChevronRight size={15} className="location-chevron" />

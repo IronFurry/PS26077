@@ -13,7 +13,10 @@ import {
   Loader2,
   CheckCircle2,
   X,
-  Compass
+  Compass,
+  Crosshair,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { searchLocationsOnline, directGeocode } from '../utils/geocoding';
 
@@ -24,7 +27,14 @@ export default function Navbar({
   setActiveLocation, 
   locations = [],
   onOpenAlerts,
-  notificationsCount = 3 
+  notificationsCount = 3,
+  isAuthoritiesAuth = false,
+  authOfficer = null,
+  onLogout,
+  onDetectGps,
+  isLocatingGps = false,
+  theme = 'dark',
+  onToggleTheme
 }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -190,7 +200,7 @@ export default function Navbar({
             </svg>
           </div>
           <div className="brand-text-block">
-            <span className="brand-title">SkyWatch</span>
+            <span className="brand-title">STORMS</span>
             <span className="brand-sub">Hyper-Local Nowcasting</span>
           </div>
         </div>
@@ -231,12 +241,75 @@ export default function Navbar({
                 <X size={13} />
               </button>
             ) : null}
+
+            {onDetectGps && (
+              <button
+                type="button"
+                className={`search-gps-btn ${isLocatingGps ? 'locating' : ''} ${activeLocation?.isGps ? 'active-gps' : ''}`}
+                onClick={async () => {
+                  try {
+                    await onDetectGps(true);
+                  } catch (e) {
+                    console.log('GPS error:', e);
+                  }
+                }}
+                title="Detect my current location via GPS"
+                aria-label="Detect my current location via GPS"
+              >
+                {isLocatingGps ? (
+                  <Loader2 size={14} className="spin-fast text-cyan" />
+                ) : (
+                  <Crosshair size={14} />
+                )}
+              </button>
+            )}
           </div>
 
           {/* Dropdown Results */}
           {showDropdown && (
             <div className="search-dropdown" role="listbox">
               
+              {/* Quick GPS Geolocation Option */}
+              {onDetectGps && (
+                <div 
+                  className={`search-dropdown-item gps-detect-item ${activeLocation?.isGps ? 'active' : ''}`}
+                  onClick={async () => {
+                    setShowDropdown(false);
+                    try {
+                      await onDetectGps(true);
+                    } catch (e) {
+                      console.log('GPS error:', e);
+                    }
+                  }}
+                >
+                  <div className="loc-info">
+                    <div className="gps-icon-circle">
+                      {isLocatingGps ? (
+                        <Loader2 size={14} className="spin-fast text-cyan" />
+                      ) : (
+                        <Crosshair size={14} className="text-cyan" />
+                      )}
+                    </div>
+                    <div className="loc-text-col">
+                      <span className="loc-name">
+                        {isLocatingGps ? 'Locating device via GPS satellites…' : 'Use Current Device Location'}
+                      </span>
+                      <span className="loc-district">
+                        {activeLocation?.isGps 
+                          ? `Currently set to: ${activeLocation.name} (±${activeLocation.accuracy || 25}m)`
+                          : 'Detect exact coordinates & match nearest radar'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="loc-right">
+                    <span className="gps-live-tag">
+                      <span className="gps-pulse-dot"></span>
+                      <span>{activeLocation?.isGps ? 'GPS ACTIVE' : 'GPS AUTO'}</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* If no query, show quick suggestion header */}
               {!searchQuery && (
                 <div className="dropdown-header">
@@ -371,7 +444,11 @@ export default function Navbar({
           >
             <ShieldAlert size={14} className="officials-icon" />
             <span>Authorities / MoES</span>
-            <span className="live-tag">LIVE OPS</span>
+            {isAuthoritiesAuth ? (
+              <span className="live-tag">LIVE OPS</span>
+            ) : (
+              <span className="live-tag lock-tag">🔒 LOGIN</span>
+            )}
           </button>
         </div>
 
@@ -383,6 +460,22 @@ export default function Navbar({
           )}
         </button>
 
+        {/* Theme Mode Switcher (Dark / Light Theme Toggle) */}
+        {onToggleTheme && (
+          <button 
+            className="nav-icon-btn theme-toggle-btn" 
+            onClick={onToggleTheme} 
+            title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            aria-label="Toggle light or dark mode theme"
+          >
+            {theme === 'light' ? (
+              <Moon size={18} style={{ color: '#0284c7' }} />
+            ) : (
+              <Sun size={18} style={{ color: '#fbbf24' }} />
+            )}
+          </button>
+        )}
+
         {/* User Profile */}
         <div className="user-profile-menu-container">
           <button 
@@ -392,20 +485,25 @@ export default function Navbar({
             <div className="avatar-img-wrap">
               <img 
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
-                alt="Aryan Kate" 
+                alt="User" 
                 className="avatar-img"
               />
               <span className="online-indicator"></span>
             </div>
-            <span className="user-name">Aryan Kate</span>
+            <span className="user-name">{isAuthoritiesAuth && authOfficer ? authOfficer.name : 'User'}</span>
             <ChevronDown size={14} className="chevron" />
           </button>
 
           {showProfileMenu && (
             <div className="profile-dropdown-card">
               <div className="profile-header">
-                <strong>Aryan Kate</strong>
+                <strong>{isAuthoritiesAuth && authOfficer ? authOfficer.name : 'User'}</strong>
                 <span>📍 {activeLocation?.name} ({activeLocation?.district || 'India'})</span>
+                {isAuthoritiesAuth && authOfficer && (
+                  <span style={{ fontSize: '11px', color: '#10b981', marginTop: '4px', display: 'block' }}>
+                    ● {authOfficer.clearance}
+                  </span>
+                )}
               </div>
               <div className="profile-divider"></div>
               <button 
@@ -418,6 +516,19 @@ export default function Navbar({
                 <ShieldAlert size={15} />
                 Switch to {activePortal === 'citizen' ? 'MoES Officials Ops' : 'Citizen Public View'}
               </button>
+              {isAuthoritiesAuth && onLogout && (
+                <button 
+                  className="profile-item logout-item"
+                  style={{ color: '#f87171' }}
+                  onClick={() => {
+                    onLogout();
+                    setShowProfileMenu(false);
+                  }}
+                >
+                  <ShieldAlert size={15} />
+                  <span>Log Out of MoES Authorities</span>
+                </button>
+              )}
               <button className="profile-item" onClick={() => setShowProfileMenu(false)}>
                 <MapPin size={15} />
                 Zone: {activeLocation?.name}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RiskMap from '../map/RiskMap';
 import { 
   Activity, 
@@ -9,6 +9,7 @@ import {
   Cpu, 
   Zap, 
   CloudLightning, 
+  CloudRain,
   Waves, 
   Layers, 
   BarChart3, 
@@ -28,7 +29,9 @@ import {
   TrendingDown,
   Info,
   ChevronRight,
-  Maximize2
+  Maximize2,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import { 
   REGIONS_DATA,
@@ -39,7 +42,14 @@ import {
 } from '../../data/weatherData';
 import { getNowcast } from '../../services/api';
 
-export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal }) {
+export default function OfficialsDashboard({ 
+  onOpenDispatchModal, 
+  onOpenXaiModal,
+  currentTab,
+  setCurrentTab,
+  authOfficer,
+  onLogout
+}) {
   // Navigation tabs matching the user's wireframe
   const [activeNav, setActiveNav] = useState('OVERVIEW'); // 'OVERVIEW' | 'MAP' | 'HAZARDS' | 'SATELLITE' | 'DATA' | 'NODES' | 'XAI'
   
@@ -47,6 +57,19 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
   const [selectedRegionId, setSelectedRegionId] = useState('vasai');
   const [activeHazardFilter, setActiveHazardFilter] = useState('cloudburst');
   const [isSimulating, setIsSimulating] = useState(false);
+
+  // Sync external sidebar tab with activeNav
+  useEffect(() => {
+    if (!currentTab) return;
+    if (currentTab === 'mtl-maps') setActiveNav('MAP');
+    else if (currentTab === 'home') setActiveNav('OVERVIEW');
+    else if (currentTab === 'xai') {
+      setActiveNav('XAI');
+      onOpenXaiModal(selectedRegionId);
+    } else if (currentTab === 'settings') {
+      setActiveNav('DATA');
+    }
+  }, [currentTab]);
 
   // Single Source of Truth from REGIONS_DATA
   const selectedRegion = REGIONS_DATA[selectedRegionId] || REGIONS_DATA.vasai;
@@ -65,12 +88,12 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
   return (
     <div className="ops-center-container">
       {/* =========================================================================
-          TOP COMMAND HEADER (skywatch | OPERATIONS CENTER ● SYSTEM OPERATIONAL)
+          TOP COMMAND HEADER (STORMS | OPERATIONS CENTER ● SYSTEM OPERATIONAL)
           ========================================================================= */}
       <div className="ops-wireframe-header">
         <div className="ops-wireframe-title-group">
           <div className="ops-brand-badge">
-            <span className="ops-logo-text">skywatch</span>
+            <span className="ops-logo-text">STORMS</span>
             <span className="ops-divider-pipe">|</span>
             <span className="ops-suite-text">OPERATIONS CENTER</span>
           </div>
@@ -81,6 +104,14 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
         </div>
 
         <div className="ops-wireframe-actions">
+          {authOfficer && (
+            <div className="officer-session-pill">
+              <UserCheck size={13} className="text-emerald" />
+              <span className="officer-name">{authOfficer.name}</span>
+              <span className="officer-badge-tag">{authOfficer.badgeId}</span>
+            </div>
+          )}
+
           <button 
             className="ops-action-btn simulate-btn-wire" 
             onClick={handleSimulate}
@@ -98,6 +129,17 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
             <Send size={13} />
             <span>DISPATCH CAP ALERT</span>
           </button>
+
+          {onLogout && (
+            <button 
+              className="ops-action-btn logout-btn-wire"
+              onClick={onLogout}
+              title="End Classified Officer Session"
+            >
+              <LogOut size={13} />
+              <span>LOGOUT</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -616,8 +658,8 @@ export default function OfficialsDashboard({ onOpenDispatchModal, onOpenXaiModal
             <div className="ops-timeline-box">
               <div className="ops-box-header">
                 <Clock size={15} className="text-amber" />
-                <span className="ops-box-title">FORECAST TIMELINE</span>
-                <span className="timeline-formula-sub">NOW → +30m → +1h → +2h → +3h</span>
+                <span className="ops-box-title">2–6 HOUR NOWCAST TIMELINE</span>
+                <span className="timeline-formula-sub">NOW → +1h → +2h → +3h → +4h → +5h → +6h</span>
               </div>
 
               <div className="timeline-bars-sequence">

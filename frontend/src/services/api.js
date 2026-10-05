@@ -1,5 +1,5 @@
 /**
- * SkyWatch API Service Layer
+ * STORMS API Service Layer
  * SIH Problem Statement 26077 (MoES - NCMRWF)
  *
  * Provides async services for Nowcast predictions, Severe Weather Alerts,

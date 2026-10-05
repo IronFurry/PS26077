@@ -6,6 +6,7 @@ import {
   MapPin, 
   Info, 
   ShieldCheck, 
+  ShieldAlert,
   AlertTriangle, 
   Droplet, 
   Home, 
@@ -36,8 +37,8 @@ export default function RightAlertPanel({
 
         <div className="curr-right" onClick={onOpenAlertDetails}>
           <div className="curr-next-stack">
-            <span className="curr-next-label">Next 3 hours</span>
-            <span className="curr-next-pred">Heavy rain likely</span>
+            <span className="curr-next-label">2–6h Nowcast</span>
+            <span className="curr-next-pred">Heavy rain peak (+2h)</span>
           </div>
           <ChevronRight size={16} className="curr-next-chevron" />
         </div>

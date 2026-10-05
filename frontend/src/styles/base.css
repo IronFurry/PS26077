@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SkyWatch Modern Theme Stylesheet
+   STORMS Modern Theme Stylesheet
    SIH Problem Statement 26077: AI-Driven Hyper-Local Early Warning System
    Dual Interface: Citizen Portal & MoES-NCMRWF Officials Command Center
    ========================================================================== */
@@ -11,5 +11,63 @@
   min-height: 100vh;
   background-color: var(--bg-main);
   color: var(--text-primary);
+}
+
+/* Floating GPS Notification Toast */
+.gps-toast-banner {
+  position: fixed;
+  top: 70px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: slideDownToast 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+}
+
+.gps-toast-banner.success {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #00d2ff;
+  color: #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.3);
+}
+
+.gps-toast-banner.error {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid #ef4444;
+  color: #fca5a5;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+.gps-toast-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+.gps-toast-close:hover {
+  color: #ffffff;
+}
+
+@keyframes slideDownToast {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 

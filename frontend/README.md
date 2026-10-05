@@ -1,4 +1,4 @@
-# SkyWatch: AI-Driven Hyper-Local Early Warning System for Severe Weather Nowcasting
+# STORMS: AI-Driven Hyper-Local Early Warning System for Severe Weather Nowcasting
 **Smart India Hackathon (SIH) Problem Statement ID:** 26077  
 **Organization:** Ministry of Earth Sciences (MoES)  
 **Department:** National Centre for Medium Range Weather Forecasting (NCMRWF)  
@@ -8,7 +8,7 @@
 
 ## 🛰️ Dual-Portal Architecture
 
-### 1. 👤 Citizen / Public Portal ("SkyWatch")
+### 1. 👤 Citizen / Public Portal ("STORMS")
 Tailored for general citizens and vulnerable communities, replicating the dark sleek UI from the design reference:
 * **Interactive Weather Map:** Radar reflectivity over Mumbai / Vasai / Nalasopara / Virar / Arabian Sea with a 2-3h nowcasting time scrubber.
 * **Next 3 Hours Forecast:** Hourly cards (*Now, 30 min, 1 hr, 2 hr, 3 hr*).
@@ -21,12 +21,12 @@ Tailored for general citizens and vulnerable communities, replicating the dark s
 
 ---
 
-### 2. 🛡️ Officials / Operations Center ("skywatch | OPERATIONS CENTER")
+### 2. 🛡️ Officials / Operations Center ("STORMS | OPERATIONS CENTER")
 Engineered according to the exact ASCII wireframe specification for disaster management authorities (MoES / NCMRWF / NDRF / SDRF / Municipal Disaster Cells):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  skywatch | OPERATIONS CENTER          ● SYSTEM OPERATIONAL                 │
+│  STORMS | OPERATIONS CENTER            ● SYSTEM OPERATIONAL                 │
 ├────────────┬───────────────────────────────────────────────┬────────────────┤
 │            │                                               │ ACTIVE HAZARDS │
 │ OVERVIEW   │                                               │                │
@@ -59,7 +59,7 @@ Engineered according to the exact ASCII wireframe specification for disaster man
 ```
 
 #### Feature Breakdown:
-* **Top Command Bar:** `skywatch | OPERATIONS CENTER`, glowing `● SYSTEM OPERATIONAL` telemetry badge, `RUN INFERENCE`, and `DISPATCH CAP ALERT` buttons.
+* **Top Command Bar:** `STORMS | OPERATIONS CENTER`, glowing `● SYSTEM OPERATIONAL` telemetry badge, `RUN INFERENCE`, and `DISPATCH CAP ALERT` buttons.
 * **3-Column Tactical Grid:**
   * **Left Navigation:** `OVERVIEW`, `MAP`, `HAZARDS`, `SATELLITE`, `DATA`, `NODES`, `XAI` with live latency (`0.8s`), lead time (`2-6h`), and spatial resolution (`1 km²`).
   * **Center Live Risk Map:** Interactive vector canvas with hazard zone polygons, real-time convective storm cores, radar sweep beams, and clickable station nodes (*Vasai, Nalasopara, Virar*).

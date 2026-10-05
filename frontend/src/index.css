@@ -182,3 +182,457 @@ input, select, textarea {
   color: #60a5fa;
   border: 1px solid rgba(59, 130, 246, 0.4);
 }
+
+/* ==========================================================================
+   GLOBAL LIGHT THEME OVERRIDES
+   ========================================================================== */
+[data-theme="light"] {
+  --bg-main: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-card-secondary: #f8fafc;
+  --bg-input: #ffffff;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-card: #e2e8f0;
+  --border-active: #2563eb;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  --accent-cyan: #0284c7;
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #1d4ed8;
+  --accent-purple: #7c3aed;
+  --accent-amber: #d97706;
+  --accent-red: #dc2626;
+  --accent-green: #059669;
+
+  --alert-red-bg: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  --alert-red-border: rgba(239, 68, 68, 0.4);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-glow-blue: 0 4px 20px rgba(37, 99, 235, 0.15);
+  --shadow-glow-red: 0 4px 20px rgba(220, 38, 38, 0.15);
+}
+
+/* Light Theme Component Specifics */
+[data-theme="light"] body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Navbar Light Mode */
+[data-theme="light"] .navbar-container {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+[data-theme="light"] .brand-title {
+  color: #0f172a;
+}
+[data-theme="light"] .search-input {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+[data-theme="light"] .search-input:focus {
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+[data-theme="light"] .search-dropdown {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: #e2e8f0;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+[data-theme="light"] .search-dropdown-item:hover,
+[data-theme="light"] .search-dropdown-item.active {
+  background: #f1f5f9;
+}
+[data-theme="light"] .loc-name {
+  color: #0f172a;
+}
+[data-theme="light"] .portal-switcher-pill {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+[data-theme="light"] .portal-tab {
+  color: #475569;
+}
+[data-theme="light"] .portal-tab:hover {
+  color: #0f172a;
+}
+[data-theme="light"] .portal-tab.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+[data-theme="light"] .nav-icon-btn {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+[data-theme="light"] .nav-icon-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+[data-theme="light"] .user-profile-btn {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+[data-theme="light"] .user-profile-btn:hover {
+  background: #f1f5f9;
+}
+[data-theme="light"] .user-name {
+  color: #0f172a;
+}
+[data-theme="light"] .profile-dropdown-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
+}
+[data-theme="light"] .profile-header strong {
+  color: #0f172a;
+}
+[data-theme="light"] .profile-item {
+  color: #475569;
+}
+[data-theme="light"] .profile-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+[data-theme="light"] .search-gps-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0284c7;
+}
+
+/* Sidebar Light Mode */
+[data-theme="light"] .app-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+}
+[data-theme="light"] .sidebar-nav-btn {
+  color: #475569;
+}
+[data-theme="light"] .sidebar-nav-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+[data-theme="light"] .sidebar-nav-btn.active {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+[data-theme="light"] .sidebar-location-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+[data-theme="light"] .sidebar-location-card:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+[data-theme="light"] .location-title {
+  color: #0f172a;
+}
+
+/* Citizen Dashboard Light Mode */
+[data-theme="light"] .greeting-title {
+  color: #0f172a;
+}
+[data-theme="light"] .weather-map-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+[data-theme="light"] .map-layer-pills,
+[data-theme="light"] .map-icon-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+[data-theme="light"] .map-pill {
+  color: #475569;
+}
+[data-theme="light"] .map-pill:hover {
+  color: #0f172a;
+}
+[data-theme="light"] .map-pill.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+[data-theme="light"] .map-canvas-viewport {
+  background: #e2e8f0;
+}
+
+/* Citizen Severe Alert & Cards Light Mode Overrides */
+[data-theme="light"] .severe-alert-card {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12) !important;
+}
+[data-theme="light"] .severe-tag-text {
+  color: #dc2626 !important;
+}
+[data-theme="light"] .severe-time-ago {
+  color: #7f1d1d !important;
+}
+[data-theme="light"] .severe-heading {
+  color: #7f1d1d !important;
+}
+[data-theme="light"] .severe-meta-row {
+  color: #991b1b !important;
+}
+[data-theme="light"] .view-details-btn {
+  background: rgba(220, 38, 38, 0.12) !important;
+  border: 1px solid rgba(220, 38, 38, 0.35) !important;
+  color: #dc2626 !important;
+}
+[data-theme="light"] .view-details-btn:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] .current-condition-bar,
+[data-theme="light"] .next-hours-card,
+[data-theme="light"] .your-area-card,
+[data-theme="light"] .info-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] .curr-temp,
+[data-theme="light"] .curr-next-pred,
+[data-theme="light"] .card-heading,
+[data-theme="light"] .banner-headline {
+  color: #0f172a !important;
+}
+[data-theme="light"] .area-warning-banner {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+[data-theme="light"] .warning-title {
+  color: #b45309 !important;
+}
+[data-theme="light"] .warning-desc {
+  color: #78350f !important;
+}
+[data-theme="light"] .bottom-safety-banner {
+  background: linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border-color: #bae6fd !important;
+}
+
+/* Officials & Login Light Mode Overrides */
+[data-theme="light"] .ops-header-card,
+[data-theme="light"] .ops-wireframe-header,
+[data-theme="light"] .ops-subnav-panel,
+[data-theme="light"] .ops-live-risk-map-panel,
+[data-theme="light"] .ops-active-hazards-panel,
+[data-theme="light"] .ops-selected-region-strip,
+[data-theme="light"] .ops-why-alert-box,
+[data-theme="light"] .ops-timeline-box,
+[data-theme="light"] .ops-meteorological-evidence-panel,
+[data-theme="light"] .ops-command-actions-strip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04) !important;
+}
+[data-theme="light"] .org-title,
+[data-theme="light"] .ops-suite-text,
+[data-theme="light"] .map-title-text,
+[data-theme="light"] .hazards-panel-title,
+[data-theme="light"] .sel-val,
+[data-theme="light"] .ops-box-title,
+[data-theme="light"] .bullet-title,
+[data-theme="light"] .evidence-title,
+[data-theme="light"] .hazard-name,
+[data-theme="light"] .block-val-readout {
+  color: #0f172a !important;
+}
+[data-theme="light"] .subnav-header,
+[data-theme="light"] .sel-tag,
+[data-theme="light"] .r-kpi-label,
+[data-theme="light"] .bullet-desc,
+[data-theme="light"] .h-stat-lbl {
+  color: #64748b !important;
+}
+[data-theme="light"] .ops-subnav-btn {
+  color: #475569 !important;
+}
+[data-theme="light"] .ops-subnav-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .ops-subnav-btn.active {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border-left-color: #0284c7 !important;
+}
+[data-theme="light"] .simulate-btn-wire {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+[data-theme="light"] .simulate-btn-wire:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .zone-pill {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+[data-theme="light"] .zone-pill:hover {
+  color: #0f172a !important;
+  border-color: #2563eb !important;
+}
+[data-theme="light"] .zone-pill.active {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+  border-color: #0284c7 !important;
+}
+[data-theme="light"] .ops-map-canvas-container {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .tactical-hud-tag-bottom {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+[data-theme="light"] .hazard-wire-card {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .hazard-wire-card:hover {
+  background: #f1f5f9 !important;
+  border-color: #2563eb !important;
+}
+[data-theme="light"] .hazard-wire-card.selected {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+}
+[data-theme="light"] .hazard-telemetry-grid {
+  background: #f1f5f9 !important;
+}
+[data-theme="light"] .bar-track-outer {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .evidence-badge-cell {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .interpretation-text {
+  color: #334155 !important;
+}
+[data-theme="light"] .authorities-login-box,
+[data-theme="light"] .authorities-login-card,
+[data-theme="light"] .login-card-container {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .login-header-block h2,
+[data-theme="light"] .login-title,
+[data-theme="light"] .auth-heading {
+  color: #0f172a !important;
+}
+[data-theme="light"] .login-input-field,
+[data-theme="light"] .auth-input {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .ops-card,
+[data-theme="light"] .ops-panel,
+[data-theme="light"] .ops-table-container,
+[data-theme="light"] .dispatch-table {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Modals Light Mode Overrides */
+[data-theme="light"] .modal-backdrop {
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+[data-theme="light"] .modal-container,
+[data-theme="light"] .modal-card,
+[data-theme="light"] .modal-dialog {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .modal-header {
+  background: #f8fafc !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+[data-theme="light"] .modal-title,
+[data-theme="light"] .hero-headline {
+  color: #0f172a !important;
+}
+[data-theme="light"] .modal-close-btn {
+  color: #64748b !important;
+}
+[data-theme="light"] .modal-close-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .xai-card,
+[data-theme="light"] .xai-attribution-item,
+[data-theme="light"] .shap-bar-container,
+[data-theme="light"] .precursor-cell {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Map Controls Light Mode Overrides */
+[data-theme="light"] .live-map-wrapper {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+[data-theme="light"] .map-toolbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+[data-theme="light"] .map-toolbar-btn {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+[data-theme="light"] .map-toolbar-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .map-toolbar-btn.active {
+  background: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+  color: #0284c7 !important;
+}
+[data-theme="light"] .map-legend-card,
+[data-theme="light"] .radar-timeline-control {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important;
+}

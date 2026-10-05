@@ -101,7 +101,7 @@ export default function ExplainableAiModal({ isOpen, onClose, region, onSelectRe
               <span>Multi-Task Learning (MTL) Spatiotemporal Architecture</span>
             </h4>
             <p className="xai-text">
-              Instead of running computationally heavy thermodynamic simulations (NWP) which take hours, SkyWatch uses a shared 3D Spatiotemporal Transformer backbone. The shared layers ingest multi-spectral satellite imagery and reanalysis grids to distill foundational features, branching into three dedicated heads calibrated for <strong>{targetRegion.name}</strong>:
+              Instead of running computationally heavy thermodynamic simulations (NWP) which take hours, STORMS uses a shared 3D Spatiotemporal Transformer backbone. The shared layers ingest multi-spectral satellite imagery and reanalysis grids to distill foundational features, branching into three dedicated heads calibrated for <strong>{targetRegion.name}</strong>:
             </p>
 
             <div className="mtl-pipeline-diagram">
@@ -212,7 +212,7 @@ export default function ExplainableAiModal({ isOpen, onClose, region, onSelectRe
                 <tr>
                   <th>Performance Metric</th>
                   <th>Traditional Physics NWP</th>
-                  <th>SkyWatch AI Nowcast Net</th>
+                  <th>STORMS AI Nowcast Net</th>
                 </tr>
               </thead>
               <tbody>

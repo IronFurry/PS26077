@@ -25,13 +25,15 @@ export default function CitizenDashboard({
   setActiveLocation,
   onOpenAlertDetails, 
   onOpenXai, 
-  onOpenSafetyGuide 
+  onOpenSafetyGuide,
+  onDetectGps,
+  isLocatingGps
 }) {
   const { text: greetingText, icon: greetingIcon } = getTimeContext();
 
   return (
     <div className="citizen-dashboard-layout">
-      {/* Center Column: Greeting + Map + Next 3 Hours + Your Area + Safety Banner */}
+      {/* Center Column: Greeting + Map + 2-6 Hours Nowcast + Your Area + Safety Banner */}
       <div className="citizen-main-content">
         <div className="greeting-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -50,14 +52,18 @@ export default function CitizenDashboard({
           activeLocation={activeLocation}
           onSelectLocation={setActiveLocation}
           onOpenXai={onOpenXai}
+          onDetectGps={onDetectGps}
+          isLocatingGps={isLocatingGps}
         />
 
-        {/* Grid with Next 3 Hours & Your Area */}
+        {/* Grid with 2-6 Hours Prediction Horizon & Your Area */}
         <div className="forecast-and-area-grid">
           <NextHoursForecast activeLocation={activeLocation} />
           <YourAreaCard 
             activeLocation={activeLocation} 
             onOpenAlertDetails={onOpenAlertDetails} 
+            onDetectGps={onDetectGps}
+            isLocatingGps={isLocatingGps}
           />
         </div>
 
